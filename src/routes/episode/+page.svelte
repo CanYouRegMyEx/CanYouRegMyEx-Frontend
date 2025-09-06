@@ -2,10 +2,15 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
+	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { Search } from 'lucide-svelte';
+	import { UserSearch } from 'lucide-svelte';
+	import { Backpack } from 'lucide-svelte';
 
 	let castList = [
 		{
-			title: 'Card Title 1',
+			title: 'Kudo Shinichi',
 			description: 'Card Description 1',
 			content: 'Card Content 1',
 			footer: 'Card Footer 1'
@@ -70,11 +75,12 @@
 	];
 </script>
 
+<!-- Description -->
 <div
-	class="w-full h-screen opacity-100 flex flex-col items-center justify-center gap-16 pt-32 pr-[180px] pb-20 pl-[180px] bg-white"
+	class="w-full h-screen opacity-100 flex flex-col items-center justify-center sm:gap-8 md:gap-12 lg:gap-14 xl:gap-18 2xl:gap-20 pt-32 pb-10 sm:px-7 md:px-14 lg:px-32 xl:px-60 2xl:px-70"
 	style="background: radial-gradient(163% 100% at 50% 111.9%, #132952 1.8%, #4DA0FF 31.24%, #CCC4FF 50.9%, #EBF1FF 76.28%);"
 >
-	<div class="flex flex-col space-y-6">
+	<div class="flex flex-col sm:gap-4 md:gap-6 lg:gap-8 xl:gap-10 2xl:gap-10">
 		<h1>Roller Coaster Murder Case</h1>
 		<div class="flex items-end gap-2">
 			<h3>Episode 1 / Season 1</h3>
@@ -92,28 +98,43 @@
 		</p>
 	</div>
 
-	<div class="bg-black w-[507px] h-[620px] rotate-[0deg] opacity-100"></div>
+	<div
+		class="object-cover rounded-[10px] bg-black w-[507px] h-[620px] rotate-[0deg] opacity-100"
+	></div>
 </div>
 
 <!-- Cast -->
 <div
-	class="w-full min-h-screen opacity-100 bg-[linear-gradient(245.33deg,_#EBE7FF_11.69%,_#FFFFFF_54.37%)] flex flex-col gap-7 p-20"
+	class="w-full h-screen opacity-100 bg-[linear-gradient(245.33deg,_#EBE7FF_11.69%,_#FFFFFF_54.37%)] flex flex-col items-center py-20 gap-10 sm:px-16 md:px-24 lg:px-26 xl:px-30 2xl:px-36"
 >
-	<h1>Cast</h1>
-	<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+	<h1 class="self-start">Cast</h1>
+	<div class="flex flex-wrap gap-4">
 		{#each castList as cast}
 			<Card.Root
-				class="w-[300px] h-[272px] opacity-100 gap-4 p-6 rounded-[10px] border border-solid border-gray-200"
+				class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200"
 			>
-				<Card.Header>
+				<Card.Header
+					class="w-full h-auto instrument-serif-regular text-[28px] tracking-[-0.02em] text-center"
+				>
 					<Card.Title>{cast.title}</Card.Title>
-					<Card.Description>{cast.description}</Card.Description>
+					<!-- <Card.Description>{cast.description}</Card.Description> -->
 				</Card.Header>
-				<Card.Content>
-					<p>{cast.content}</p>
+				<Card.Content
+					class="bg-gray-300 w-[100px] h-[100px] aspect-square flex justify-center items-center rounded-[100%] px-0 py-0"
+				>
+					<!-- <p>{cast.content}</p> -->
+					<Avatar.Root class="w-full h-full">
+						<Avatar.Image src="https://github.com/shadcn.png" alt="@shadcn" />
+						<Avatar.Fallback>CN</Avatar.Fallback>
+					</Avatar.Root>
 				</Card.Content>
-				<Card.Footer>
-					<p>{cast.footer}</p>
+				<Card.Footer class="w-auto h-auto flex flex-wrap justify-center items-center gap-2">
+					<!-- <p>{cast.footer}</p> -->
+					<Badge variant="outline"><Search />Badge</Badge>
+					<Badge variant="outline"><UserSearch />Badge</Badge>
+					<Badge variant="outline"><Backpack />Badge</Badge>
+					<Badge variant="outline">Badge</Badge>
+					<Badge variant="outline">Badge</Badge>
 				</Card.Footer>
 			</Card.Root>
 		{/each}
@@ -165,20 +186,33 @@
 		<div class="flex flex-col gap-7">
 			<h3 class="text-black">People</h3>
 
-			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-				{#each peopleList as person}
+			<div class="flex flex-wrap gap-6">
+				{#each castList as cast}
 					<Card.Root
-						class="w-[300px] h-[272px] opacity-100 gap-4 p-6 rounded-[10px] border border-solid border-gray-200"
+						class="w-[300px] h-[272px] opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200"
 					>
-						<Card.Header>
-							<Card.Title>{person.title}</Card.Title>
-							<Card.Description>{person.description}</Card.Description>
+						<Card.Header
+							class="w-full h-auto instrument-serif-regular text-[28px] tracking-[-0.02em] text-center"
+						>
+							<Card.Title>{cast.title}</Card.Title>
+							<!-- <Card.Description>{cast.description}</Card.Description> -->
 						</Card.Header>
-						<Card.Content>
-							<p>{person.content}</p>
+						<Card.Content
+							class="bg-gray-300 w-[100px] h-[100px] aspect-square flex justify-center items-center rounded-[100%] px-0 py-0"
+						>
+							<!-- <p>{cast.content}</p> -->
+							<Avatar.Root class="w-full h-full">
+								<Avatar.Image src="https://github.com/shadcn.png" alt="@shadcn" />
+								<Avatar.Fallback>CN</Avatar.Fallback>
+							</Avatar.Root>
 						</Card.Content>
-						<Card.Footer>
-							<p>{person.footer}</p>
+						<Card.Footer class="w-auto h-auto flex flex-wrap justify-center items-center gap-2">
+							<!-- <p>{cast.footer}</p> -->
+							<Badge variant="outline"><Search />Badge</Badge>
+							<Badge variant="outline"><UserSearch />Badge</Badge>
+							<Badge variant="outline"><Backpack />Badge</Badge>
+							<Badge variant="outline">Badge</Badge>
+							<Badge variant="outline">Badge</Badge>
 						</Card.Footer>
 					</Card.Root>
 				{/each}
