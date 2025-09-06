@@ -1,9 +1,9 @@
 <script>
 	import { mockSongData } from '$lib/data/songData.js';
-	import CastMember from '$lib/components/CastMember.svelte';
-	import LyricsToggle from '$lib/components/LyricsToggle.svelte';
-	import FlipCard from '$lib/components/FlipCard.svelte';
-	import TrackTable from '$lib/components/TrackTable.svelte';
+	import CastMember from '$lib/components/ui/cast-member';
+	import LyricsToggle from '$lib/components/ui/lyrics-toggle';
+	import FlipCard from '$lib/components/ui/flip-card';
+	import TrackTable from '$lib/components/ui/track-table';
 
 	// Use imported data instead of inline data
 	const songData = mockSongData;
