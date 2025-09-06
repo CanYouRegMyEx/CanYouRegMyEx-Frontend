@@ -1,4 +1,6 @@
 <script>
+	import { Music, Clock, Hash, Languages, Globe } from '@lucide/svelte';
+	
 	let { trackList } = $props();
 </script>
 
@@ -7,11 +9,35 @@
 		<!-- Table Header -->
 		<thead class="bg-gray-100">
 			<tr>
-				<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-16">#</th>
-				<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Song Title</th>
-				<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Romanji</th>
-				<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Translation</th>
-				<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-20">Length</th>
+				<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-16">
+					<div class="flex items-center">
+						<Hash class="w-4 h-4 mr-1" />
+					</div>
+				</th>
+				<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+					<div class="flex items-center">
+						<Music class="w-4 h-4 mr-1" />
+						Song Title
+					</div>
+				</th>
+				<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+					<div class="flex items-center">
+						<Languages class="w-4 h-4 mr-1" />
+						Romanji
+					</div>
+				</th>
+				<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+					<div class="flex items-center">
+						<Globe class="w-4 h-4 mr-1" />
+						Translation
+					</div>
+				</th>
+				<th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-20">
+					<div class="flex items-center">
+						<Clock class="w-4 h-4 mr-1" />
+						Length
+					</div>
+				</th>
 			</tr>
 		</thead>
 		<!-- Table Body -->

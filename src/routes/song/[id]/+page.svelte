@@ -4,6 +4,7 @@
 	import LyricsToggle from '$lib/components/ui/lyrics-toggle';
 	import FlipCard from '$lib/components/ui/flip-card';
 	import TrackTable from '$lib/components/ui/track-table';
+	import { Music, Users, MessageCircle, FileText, Disc } from '@lucide/svelte';
 
 	// Use imported data instead of inline data
 	const songData = mockSongData;
@@ -23,7 +24,10 @@
 		<div class="w-full overflow-hidden text-white" style="background: radial-gradient(163% 100% at 50% 111.9%, #132952 1.8%, #4DA0FF 31.24%, #CCC4FF 50.9%, #EBF1FF 76.28%);">
 			<div class="min-h-screen flex items-center justify-center p-8">
 				<div class="flex flex-col items-center text-center space-y-6 max-w-4xl">
-					<h1 class="text-4xl md:text-6xl font-bold mb-4" style="color: #325FEC;">{songData.title}</h1>
+					<div class="flex items-center justify-center mb-4">
+						<Music class="w-12 h-12 text-blue-300 mr-4" />
+						<h1 class="text-4xl md:text-6xl font-bold mb-4" style="color: #325FEC;">{songData.title}</h1>
+					</div>
 					<div class="max-w-3xl">
 						<p class="text-lg md:text-xl leading-relaxed mb-8" style="color: #081116;">
 							{songData.description}
@@ -46,7 +50,10 @@
 		<div class="w-full" style="background: linear-gradient(180deg, #F0ECFF 0%, #FFFFFF 60%);">
 			<div class="min-h-screen flex items-center justify-center p-8">
 				<div class="w-full max-w-4xl">
-					<h2 class="text-4xl md:text-5xl font-bold mb-8 text-center" style="color: #325FEC;">Cast</h2>
+					<div class="flex items-center justify-center mb-8">
+						<!-- <Users class="w-8 h-8 text-purple-600 mr-3" /> -->
+						<h2 class="text-4xl md:text-5xl font-bold" style="color: #325FEC;">Cast</h2>
+					</div>
 					<div class="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8" style="color: #171717;">
 						{#each songData.cast as member, index}
 							<CastMember {member} {index} />
@@ -62,7 +69,10 @@
 		<div class="w-full" style="background: linear-gradient(180deg, #F8F6FF 0%, #FFFFFF 70%);">
 			<div class="min-h-screen flex items-center justify-center p-8">
 				<div class="w-full max-w-4xl">
-					<h2 class="text-4xl md:text-5xl font-bold mb-12 text-center" style="color: #325FEC;">Opening Speech</h2>
+					<div class="flex items-center justify-center mb-12">
+						<!-- <MessageCircle class="w-8 h-8 text-purple-600 mr-3" /> -->
+						<h2 class="text-4xl md:text-5xl font-bold" style="color: #325FEC;">Opening Speech</h2>
+					</div>
 					
 					<FlipCard 
 						frontContent={songData.openingSpeech.japanese}
@@ -78,7 +88,10 @@
 		<div class="w-full" style="background: linear-gradient(-166deg, #F8F6FF 0%, #FFFFFF 70%);">
 			<div class="min-h-screen flex items-center justify-center p-8">
 				<div class="w-full max-w-4xl">
-					<h2 class="text-4xl md:text-5xl font-bold mb-8 text-center" style="color: #325FEC;">Lyrics</h2>
+					<div class="flex items-center justify-center mb-8">
+						<!-- <FileText class="w-8 h-8 text-purple-600 mr-3" /> -->
+						<h2 class="text-4xl md:text-5xl font-bold" style="color: #325FEC;">Lyrics</h2>
+					</div>
 
 					<LyricsToggle
 						bind:showRomanji={showRomanji}
@@ -95,11 +108,17 @@
 		<div class="w-full bg-gradient-to-br from-blue-100 via-blue-50 to-white">
 			<div class="min-h-screen flex items-center justify-center p-8">
 				<div class="w-full max-w-6xl">
-					<h2 class="text-4xl md:text-5xl font-bold mb-8 text-center" style="color: #325FEC;">CD info</h2>
+					<div class="flex items-center justify-center mb-8">
+						<!-- <Disc class="w-8 h-8 text-blue-600 mr-3" /> -->
+						<h2 class="text-4xl md:text-5xl font-bold" style="color: #325FEC;">CD info</h2>
+					</div>
 
 					<!-- CD Title -->
 					<div class="mb-8">
-						<h3 class="text-2xl md:text-3xl font-bold" style="color: #171717;">CD1</h3>
+						<div class="flex items-center">
+							<Disc class="w-6 h-6 text-gray-600 mr-2" />
+							<h3 class="text-2xl md:text-3xl font-bold" style="color: #171717;">CD1</h3>
+						</div>
 					</div>
 					
 					<!-- Track Table Component -->
