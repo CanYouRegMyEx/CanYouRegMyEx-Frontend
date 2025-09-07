@@ -1,59 +1,49 @@
 <script>
-	import Card from '../component/card.svelte';
-	import Button from '$lib/components/ui/button/button.svelte';
-	import * as Pagination from '$lib/components/ui/pagination/index.js';
-	import * as Table from '$lib/components/ui/table/index.js';
+	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
+	import conanIcon from '$lib/assets/Conanicons.jpg';
+	import bigConan from '$lib/assets/Bigconan.png';
 </script>
 
-<!-- <h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p> -->
-
-<div class="bg-gray-200 w-full h-screen flex flex-col items-center justify-center">
-	<Button class="w-32 h-12 text-xl cursor-pointer">Crawl</Button>
-	<div class="w-3/4 my-8 bg-white p-4 rounded-lg shadow-md">
-		<Table.Root>
-			<Table.Caption>A list of your recent invoices.</Table.Caption>
-			<Table.Header>
-				<Table.Row>
-					<Table.Head class="w-[100px]">Invoice</Table.Head>
-					<Table.Head>Status</Table.Head>
-					<Table.Head>Method</Table.Head>
-					<Table.Head class="text-right">Amount</Table.Head>
-				</Table.Row>
-			</Table.Header>
-			<Table.Body>
-				<Table.Row>
-					<Table.Cell class="font-medium">INV001</Table.Cell>
-					<Table.Cell>Paid</Table.Cell>
-					<Table.Cell>Credit Card</Table.Cell>
-					<Table.Cell class="text-right">$250.00</Table.Cell>
-				</Table.Row>
-			</Table.Body>
-		</Table.Root>
+<div class="w-full h-screen flex flex-col">
+	<!-- Navbar -->
+	<div class="bg-white w-full h-fit max-h-[100px] flex justify-between items-center px-10 py-1">
+		<div class="flex items-center gap-4">
+			<img class="w-24 h-24" src={conanIcon} alt="Conan Icon" />
+			<h1 class="instrument-serif-regular">CanYouRegMyEx</h1>
+		</div>
+		<div class="flex gap-10">
+			<p class="hover:text-[#325FEC]"><a href="">Download CSV</a></p>
+			<p class="hover:text-[#325FEC]"><a href="">Source Code</a></p>
+			<p class="hover:text-[#325FEC]"><a href="">Youtube</a></p>
+			<p class="hover:text-[#325FEC]"><a href="">Reference</a></p>
+		</div>
 	</div>
-	<Pagination.Root count={100} perPage={10} class="bg-white p-4 rounded-lg shadow-md w-1/4">
-		{#snippet children({ pages, currentPage })}
-			<Pagination.Content>
-				<Pagination.Item>
-					<Pagination.PrevButton />
-				</Pagination.Item>
-				{#each pages as page (page.key)}
-					{#if page.type === 'ellipsis'}
-						<Pagination.Item>
-							<Pagination.Ellipsis />
-						</Pagination.Item>
-					{:else}
-						<Pagination.Item>
-							<Pagination.Link {page} isActive={currentPage === page.value}>
-								{page.value}
-							</Pagination.Link>
-						</Pagination.Item>
-					{/if}
-				{/each}
-				<Pagination.Item>
-					<Pagination.NextButton />
-				</Pagination.Item>
-			</Pagination.Content>
-		{/snippet}
-	</Pagination.Root>
+
+	<!-- Background Gradient -->
+	<div
+		class="w-full h-fit flex justify-evenly items-start gap-20 px-20"
+		style="background: radial-gradient(163% 100% at 50% 111.9%, #132952 1.8%, #4DA0FF 31.24%, #CCC4FF 50.9%, #EBF1FF 76.28%);"
+	>
+		<div class="flex flex-col gap-12 max-w-[596px] self-center">
+			<h1 class="instrument-serif-regular text-black text-8xl">Detective Conan</h1>
+			<p>
+				The Detective Conan anime was first aired on January 8, 1996. It is animated by TMS
+				Entertainment (formerly known as Tokyo Movie), and is produced by Yomiuri TV. The broadcast
+				schedule was Mondays at 7.30 p.m. JST (excluding 1-hour, 2-hour and 2.5-hour special
+				episodes). On October 2008, the schedule was moved to Mondays at 7.00 p.m. JST, before being
+				moved to Saturdays at 6.00 p.m. JST since April 2009. On March 6, 2021, the anime reached
+				1000 episodes and continues until today. The show's official website is <a
+					href="http://www.ytv.co.jp/conan/">http://www.ytv.co.jp/conan/</a
+				>.
+			</p>
+		</div>
+		<img src={bigConan} class="w-3xl aspect-square object-cover" alt="Big Conan" />
+	</div>
+
+	<!--Text Running Banner -->
+	<div class="bg-[#325FEC] p-7 overflow-hidden">
+		<h2 class="text-white marquee">
+			There is only one truth, and I will uncover it. I’m Edogawa Conan, a detective.
+		</h2>
+	</div>
 </div>
