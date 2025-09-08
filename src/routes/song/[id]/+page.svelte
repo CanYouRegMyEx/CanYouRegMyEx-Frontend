@@ -47,7 +47,7 @@
 
 	<!-- Cast Section - Full Screen -->
 	<section class="min-h-screen flex items-center justify-center">
-		<div class="w-full" style="background: linear-gradient(180deg, #F0ECFF 0%, #FFFFFF 60%);">
+		<div class="w-full" style="background: linear-gradient(245.33deg, #EBE7FF 11.69%, #FFFFFF 54.37%);">
 			<div class="min-h-screen flex items-center justify-center p-8">
 				<div class="w-full max-w-4xl">
 					<div class="flex items-center justify-center mb-8">
@@ -66,7 +66,7 @@
 
 	<!-- Conan's Opening Speech - Full Screen -->
 	<section class="min-h-screen flex items-center justify-center">
-		<div class="w-full" style="background: linear-gradient(180deg, #F8F6FF 0%, #FFFFFF 70%);">
+		<div class="w-full" style="background: linear-gradient(336.19deg, #FFFFFF 56.55%, #EBE7FF 100.92%);">
 			<div class="min-h-screen flex items-center justify-center p-8">
 				<div class="w-full max-w-4xl">
 					<div class="flex items-center justify-center mb-12">
@@ -85,7 +85,7 @@
 
 	<!-- Lyrics Section - Full Screen -->
 	<section class="min-h-screen flex items-center justify-center">
-		<div class="w-full" style="background: linear-gradient(-166deg, #F8F6FF 0%, #FFFFFF 70%);">
+		<div class="w-full" style="background: linear-gradient(84.56deg, #FFFFFF 56.5%, #EBE7FF 93.91%);">
 			<div class="min-h-screen flex items-center justify-center p-8">
 				<div class="w-full max-w-4xl">
 					<div class="flex items-center justify-center mb-8">
@@ -105,7 +105,7 @@
 
 	<!-- CD Info Section - Full Screen -->
 	<section class="min-h-screen flex items-center justify-center">
-		<div class="w-full bg-gradient-to-br from-blue-100 via-blue-50 to-white">
+		<div class="w-full" style="background: linear-gradient(292.25deg, #FFFFFF 51.61%, #EBE7FF 89.83%);">
 			<div class="min-h-screen flex items-center justify-center p-8">
 				<div class="w-full max-w-6xl">
 					<div class="flex items-center justify-center mb-8">
