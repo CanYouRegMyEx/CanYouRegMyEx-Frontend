@@ -3,6 +3,7 @@
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import * as Carousel from '$lib/components/ui/carousel/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Search } from 'lucide-svelte';
 	import { UserSearch } from 'lucide-svelte';
@@ -77,7 +78,7 @@
 
 <!-- Description -->
 <div
-	class="w-full h-screen opacity-100 flex flex-col items-center justify-center sm:gap-8 md:gap-12 lg:gap-14 xl:gap-18 2xl:gap-20 pt-32 pb-10 sm:px-7 md:px-14 lg:px-32 xl:px-60 2xl:px-70"
+	class="w-full h-screen opacity-100 flex flex-col items-center justify-center sm:gap-8 md:gap-12 lg:gap-14 xl:gap-18 2xl:gap-20 py-20 sm:px-7 md:px-14 lg:px-32 xl:px-60 2xl:px-70"
 	style="background: radial-gradient(163% 100% at 50% 111.9%, #132952 1.8%, #4DA0FF 31.24%, #CCC4FF 50.9%, #EBF1FF 76.28%);"
 >
 	<div class="flex flex-col sm:gap-4 md:gap-6 lg:gap-8 xl:gap-10 2xl:gap-10">
@@ -98,14 +99,14 @@
 		</p>
 	</div>
 
-	<div
-		class="object-cover rounded-[10px] bg-black w-[507px] h-[620px] rotate-[0deg] opacity-100"
-	></div>
+	<div class="object-cover rounded-[10px] w-[507px] h-fit rotate-[0deg] opacity-100">
+		<img src="https://github.com/shadcn.png" alt="" class="w-full h-full object-cover" />
+	</div>
 </div>
 
 <!-- Cast -->
 <div
-	class="w-full h-screen opacity-100 bg-[linear-gradient(245.33deg,_#EBE7FF_11.69%,_#FFFFFF_54.37%)] flex flex-col items-center py-20 gap-10 sm:px-16 md:px-24 lg:px-26 xl:px-30 2xl:px-36"
+	class="w-full h-fit opacity-100 bg-[linear-gradient(245.33deg,_#EBE7FF_11.69%,_#FFFFFF_54.37%)] flex flex-col items-center py-20 gap-10 sm:px-16 md:px-24 lg:px-26 xl:px-30 2xl:px-36"
 >
 	<h1 class="self-start">Cast</h1>
 	<div class="flex flex-wrap gap-4">
@@ -143,13 +144,13 @@
 
 <!-- Plot -->
 <div
-	class="w-full h-[2055px] opacity-100 bg-[linear-gradient(336.19deg,_#FFFFFF_56.55%,_#EBE7FF_100.92%)] flex flex-col p-20 gap-10"
+	class="w-full h-fit opacity-100 bg-[linear-gradient(336.19deg,_#FFFFFF_56.55%,_#EBE7FF_100.92%)] flex flex-col sm:py-10 md:py-12 lg:py-16 xl:py-20 lg:gap-6 xl:gap-10 sm:px-16 md:px-24 lg:px-26 xl:px-30 2xl:px-36"
 >
 	<h1>Plot</h1>
 	<!-- Case 1 -->
-	<div class="flex flex-col gap-12">
+	<div class="flex flex-col sm:gap-4 md:gap-6 lg:gap-8 xl:gap-12 2xl:gap-15">
 		<!-- Case Detail -->
-		<div class="flex flex-col gap-7">
+		<div class="flex flex-col md:gap-3 lg:gap-5 xl:gap-7">
 			<h2 class="flex items-end">
 				<span class="instrument-serif-regular">Case 1</span>: Crime at the Private Mansion
 			</h2>
@@ -164,32 +165,66 @@
 			</p>
 		</div>
 
-		<!-- Card -->
-		<div class="flex flex-col justify-center items-center">
-			<Card.Root
-				class="w-[641px] h-[364px] opacity-100 gap-6 p-6 rounded-[10px] border border-solid"
-			>
-				<Card.Header>
-					<Card.Title>Card Title</Card.Title>
-					<Card.Description>Card Description</Card.Description>
-				</Card.Header>
-				<Card.Content>
-					<p>Card Content</p>
-				</Card.Content>
-				<Card.Footer>
-					<p>Card Footer</p>
-				</Card.Footer>
-			</Card.Root>
+		<!-- Carousel -->
+		<div class="flex justify-center items-center">
+			<Carousel.Root class="w-full h-fit max-w-2xl">
+				<Carousel.Content>
+					{#each Array(5), i}
+						<Carousel.Item>
+							<div class="p-1">
+								<Card.Root>
+									<Card.Content class="flex flex-col items-center justify-center p-6 gap-6">
+										<p class="instrument-serif-regular">Murder</p>
+
+										<div class="w-full h-fit flex gap-6">
+											<img
+												src="https://github.com/shadcn.png"
+												alt="CN"
+												class="max-w-[250px] max-h-[250px]"
+											/>
+
+											<div class="flex flex-col gap-2">
+												<div class="flex gap-4">
+													<p>Location:</p>
+													<p class="text-[#737373]">Private Mansion</p>
+												</div>
+												<div class="flex gap-4">
+													<p>Victim:</p>
+													<p class="text-[#737373]">Tetsu Yamazaki</p>
+												</div>
+												<div class="flex gap-4">
+													<p>Cause of death:</p>
+													<p class="text-[#737373]">Gunshot wound</p>
+												</div>
+												<div class="flex gap-4">
+													<p>Suspects:</p>
+													<p class="text-[#737373]">Owner/host, and guests</p>
+												</div>
+												<p class="text-[#737373]">
+													President Yamazaki of Yatsubishi Bank is found dead in a locked room with
+													a bullet through his chest.
+												</p>
+											</div>
+										</div>
+									</Card.Content>
+								</Card.Root>
+							</div>
+						</Carousel.Item>
+					{/each}
+				</Carousel.Content>
+				<Carousel.Previous />
+				<Carousel.Next />
+			</Carousel.Root>
 		</div>
 
 		<!-- People -->
-		<div class="flex flex-col gap-7">
+		<div class="flex flex-col gap-10">
 			<h3 class="text-black">People</h3>
 
-			<div class="flex flex-wrap gap-6">
+			<div class="flex flex-wrap gap-4">
 				{#each castList as cast}
 					<Card.Root
-						class="w-[300px] h-[272px] opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200"
+						class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200"
 					>
 						<Card.Header
 							class="w-full h-auto instrument-serif-regular text-[28px] tracking-[-0.02em] text-center"
@@ -227,7 +262,7 @@
 			<div class="w-[600px] h-auto text-white flex justify-center">
 				<Accordion.Root type="single" class="w-full sm:max-w-[70%] text-white" value="item-1">
 					<Accordion.Item value="item-1">
-						<Accordion.Trigger>Product Information</Accordion.Trigger>
+						<Accordion.Trigger>Evidence</Accordion.Trigger>
 						<Accordion.Content class="flex flex-col gap-4 text-balance">
 							<p>
 								Our flagship product combines cutting-edge technology with sleek design. Built with
@@ -240,7 +275,7 @@
 						</Accordion.Content>
 					</Accordion.Item>
 					<Accordion.Item value="item-2">
-						<Accordion.Trigger>Shipping Details</Accordion.Trigger>
+						<Accordion.Trigger>Conclusion</Accordion.Trigger>
 						<Accordion.Content class="flex flex-col gap-4 text-balance">
 							<p>
 								We offer worldwide shipping through trusted courier partners. Standard delivery
@@ -254,7 +289,7 @@
 						</Accordion.Content>
 					</Accordion.Item>
 					<Accordion.Item value="item-3">
-						<Accordion.Trigger>Return Policy</Accordion.Trigger>
+						<Accordion.Trigger>Motive</Accordion.Trigger>
 						<Accordion.Content class="flex flex-col gap-4 text-balance">
 							<p>
 								We stand behind our products with a comprehensive 30-day return policy. If
@@ -275,7 +310,7 @@
 
 <!-- BGM list -->
 <div
-	class="w-full h-[466px] opacity-100 bg-[linear-gradient(72.44deg,_#FFFFFF_56.67%,_#EBE7FF_102.5%)] flex flex-col p-20 gap-7"
+	class="w-full h-fit opacity-100 bg-[linear-gradient(72.44deg,_#FFFFFF_56.67%,_#EBE7FF_102.5%)] flex flex-col p-20 gap-7"
 >
 	<h1>BGM listing</h1>
 	<div class="h-auto bg-white">
