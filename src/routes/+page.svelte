@@ -2,52 +2,50 @@
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
-	import * as Pagination from '$lib/components/ui/pagination/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Search } from 'lucide-svelte';
 	import conanIcon from '$lib/assets/Conanicons.jpg';
 	import bigConan from '$lib/assets/Bigconan.png';
+	import { onMount } from 'svelte';
 
 	let showStatusBar = $state(true);
 	let showActivityBar = $state(false);
 	let showPanel = $state(false);
 
-	const episodeTable = [
-		{
-			season: 1,
-			jpn: 1,
-			int: 1,
-			title: 'Roller Coaster Murder Case',
-			plot: '❤️🥲🐧',
-			original: 'January 8, 1996',
-			rebroadcast: 'May 24, 2004 July 3, 2025',
-			manga: 'V1 ~ F1 (001)',
-			hint: 'Skyscraper'
-		},
-		{
-			season: 1,
-			jpn: 2,
-			int: 2,
-			title: "Company President's Daughter Kidnapping Case",
-			plot: '🕵️‍♂️🚗',
-			original: 'January 15, 1996',
-			rebroadcast: 'June 1, 2004 July 10, 2025',
-			manga: 'V1 ~ F2 (002)',
-			hint: 'Kidnapper'
-		},
-		{
-			season: 1,
-			jpn: 3,
-			int: 3,
-			title: 'Mystery of the Murdered Actress',
-			plot: '🎭🔪',
-			original: 'January 22, 1996',
-			rebroadcast: 'June 8, 2004 July 17, 2025',
-			manga: 'V1 ~ F3 (003)',
-			hint: 'Actress'
+	let episodes = [];
+	let limit = 25;
+	let offset = 0;
+	let loading = false;
+	let error = null;
+
+	async function fetchEpisodes() {
+		loading = true;
+		error = null;
+		try {
+			const res = await fetch(`http://127.0.0.1:8000/episodes/?limit=${limit}&offset=${offset}`);
+			if (!res.ok) throw new Error('Failed to fetch episodes');
+			episodes = await res.json();
+		} catch (e) {
+			error = e.message;
+		} finally {
+			loading = false;
 		}
-	];
+	}
+
+	function nextPage() {
+		offset += limit;
+		fetchEpisodes();
+	}
+
+	function prevPage() {
+		if (offset >= limit) {
+			offset -= limit;
+			fetchEpisodes();
+		}
+	}
+
+	onMount(fetchEpisodes);
 </script>
 
 <div class="w-full h-screen flex flex-col">
@@ -94,6 +92,7 @@
 	</div>
 </div>
 
+<!-- Episode List -->
 <div class="w-full h-fit flex flex-col gap-10 p-32">
 	<h1>All Episodes</h1>
 
@@ -160,65 +159,50 @@
 	</div>
 
 	<!-- Table -->
-	<div>
-		<Table.Root>
-			<Table.Header>
-				<Table.Row>
-					<Table.Head>Season</Table.Head>
-					<Table.Head>JPN</Table.Head>
-					<Table.Head>INT</Table.Head>
-					<Table.Head class="w-[100px]">Episode title</Table.Head>
-					<Table.Head>Plot</Table.Head>
-					<Table.Head>Original broadcast</Table.Head>
-					<Table.Head>Original broadcast</Table.Head>
-					<Table.Head>Manga resource</Table.Head>
-					<Table.Head>Next's Conan hint</Table.Head>
-				</Table.Row>
-			</Table.Header>
-			<Table.Body>
-				{#each episodeTable as row}
+	<div class="h-auto bg-white rounded-lg shadow overflow-x-auto">
+		{#if loading}
+			<p class="p-4">Loading...</p>
+		{:else if error}
+			<p class="p-4 text-red-500">{error}</p>
+		{:else}
+			<Table.Root>
+				<Table.Header>
 					<Table.Row>
-						<Table.Cell>{row.season}</Table.Cell>
-						<Table.Cell>{row.jpn}</Table.Cell>
-						<Table.Cell>{row.int}</Table.Cell>
-						<Table.Cell>{row.title}</Table.Cell>
-						<Table.Cell>{row.plot}</Table.Cell>
-						<Table.Cell>{row.original}</Table.Cell>
-						<Table.Cell>{row.rebroadcast}</Table.Cell>
-						<Table.Cell>{row.manga}</Table.Cell>
-						<Table.Cell>{row.hint}</Table.Cell>
+						<Table.Head>Season</Table.Head>
+						<Table.Head>JPN</Table.Head>
+						<Table.Head>INT</Table.Head>
+						<Table.Head class="w-[100px]">Episode title</Table.Head>
+						<Table.Head>Plot</Table.Head>
+						<Table.Head>Original broadcast</Table.Head>
+						<Table.Head>English broadcast</Table.Head>
+						<Table.Head>Manga resource</Table.Head>
+						<Table.Head>Next's Conan hint</Table.Head>
 					</Table.Row>
-				{/each}
-			</Table.Body>
-		</Table.Root>
+				</Table.Header>
+				<Table.Body>
+					{#each episodes as ep}
+						<Table.Row>
+							<Table.Cell>{ep.season}</Table.Cell>
+							<Table.Cell>{ep.index_jpn}</Table.Cell>
+							<Table.Cell>{ep.index_int}</Table.Cell>
+							<Table.Cell>
+								<a href={ep.episode.link} class="text-blue-600 underline">{ep.episode.label}</a>
+							</Table.Cell>
+							<Table.Cell>{ep.plots ? ep.plots.join(', ') : ''}</Table.Cell>
+							<Table.Cell>{ep.date_jpn}</Table.Cell>
+							<Table.Cell>{ep.date_eng}</Table.Cell>
+							<Table.Cell>{ep.manga_source}</Table.Cell>
+							<Table.Cell>{ep.next_hint}</Table.Cell>
+						</Table.Row>
+					{/each}
+				</Table.Body>
+			</Table.Root>
+		{/if}
 	</div>
 
 	<!-- Pagination -->
-	<div>
-		<Pagination.Root count={100} perPage={10}>
-			{#snippet children({ pages, currentPage })}
-				<Pagination.Content>
-					<Pagination.Item>
-						<Pagination.PrevButton />
-					</Pagination.Item>
-					{#each pages as page (page.key)}
-						{#if page.type === 'ellipsis'}
-							<Pagination.Item>
-								<Pagination.Ellipsis />
-							</Pagination.Item>
-						{:else}
-							<Pagination.Item>
-								<Pagination.Link {page} isActive={currentPage === page.value}>
-									{page.value}
-								</Pagination.Link>
-							</Pagination.Item>
-						{/if}
-					{/each}
-					<Pagination.Item>
-						<Pagination.NextButton />
-					</Pagination.Item>
-				</Pagination.Content>
-			{/snippet}
-		</Pagination.Root>
+	<div class="flex gap-4 mt-4">
+		<Button on:click={prevPage} disabled={offset === 0}>Previous</Button>
+		<Button on:click={nextPage}>Next</Button>
 	</div>
 </div>
