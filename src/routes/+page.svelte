@@ -13,19 +13,55 @@
 	let showActivityBar = $state(false);
 	let showPanel = $state(false);
 
-	let episodes = [];
+	let search = '';
+	let season = '';
+	let plot = [];
+
+	let episodes = $state([]);
 	let limit = 25;
-	let offset = 0;
-	let loading = false;
-	let error = null;
+	let offset = $state(0);
+	let loading = $state(false);
+	let error = $state(null);
+	let totalCount = $state(0);
+	let currentPage = $state(1);
 
 	async function fetchEpisodes() {
 		loading = true;
 		error = null;
+		const params = new URLSearchParams({
+			limit,
+			offset,
+			...(search && { filter: search }),
+			...(season && { season: parseInt(season) })
+		});
+
+		// Add plot parameters as separate query params
+		if (plot && plot.length > 0) {
+			plot.forEach((p) => params.append('plot', p));
+		}
+
 		try {
-			const res = await fetch(`http://127.0.0.1:8000/episodes/?limit=${limit}&offset=${offset}`);
+			const res = await fetch(`http://127.0.0.1:8000/episodes/?${params.toString()}`);
 			if (!res.ok) throw new Error('Failed to fetch episodes');
-			episodes = await res.json();
+			const data = await res.json();
+
+			// Backend returns array directly
+			episodes = data;
+
+			// Update current page based on offset
+			currentPage = Math.floor(offset / limit) + 1;
+
+			// We don't know the exact total count, so we'll use a simple approach:
+			// - If we get exactly 'limit' episodes, there might be more
+			// - If we get less than 'limit', we're at the end
+			const hasMoreData = data.length === limit;
+
+			// Set a high totalCount if there might be more data
+			if (hasMoreData) {
+				totalCount = offset + limit + limit; // Add another page worth to enable next
+			} else {
+				totalCount = offset + data.length; // Exact count to disable next
+			}
 		} catch (e) {
 			error = e.message;
 		} finally {
@@ -33,17 +69,76 @@
 		}
 	}
 
-	function nextPage() {
-		offset += limit;
+	function handleSearch() {
+		offset = 0;
 		fetchEpisodes();
+	}
+
+	function nextPage() {
+		// Simple check: if current page has full data, allow next page
+		if (episodes.length === limit) {
+			offset = offset + limit;
+			fetchEpisodes();
+		}
 	}
 
 	function prevPage() {
 		if (offset >= limit) {
-			offset -= limit;
+			offset = offset - limit;
 			fetchEpisodes();
 		}
 	}
+
+	function goToPage(page) {
+		offset = (page - 1) * limit;
+		fetchEpisodes();
+	}
+
+	function firstPage() {
+		offset = 0;
+		fetchEpisodes();
+	}
+
+	// Remove lastPage function since we don't know total pages
+
+	function handlePlotChange(event) {
+		plot = Array.from(event.target.selectedOptions).map((option) => option.value);
+		offset = 0;
+		fetchEpisodes();
+	}
+
+	// Plot emoji mapping
+	const plotEmojiMap = {
+		new: '✨',
+		char: '👤',
+		romance: '❤️',
+		bo: '👥',
+		fbi: '👮‍♂️',
+		mk: '🎩',
+		past: '🕰️',
+		hh: '🧢',
+		db: '🕵️‍♂️',
+		dc: '👓',
+		mko: '💎'
+	};
+
+	// Function to format plots with emojis
+	function formatPlots(plots) {
+		if (!plots || plots.length === 0) return '';
+		return plots.map((plot) => plotEmojiMap[plot] || plot).join(' ');
+	}
+
+	// Reactive variables for pagination info
+	let hasNext = $derived(episodes.length === limit); // Has next if current page is full
+	let hasPrev = $derived(offset > 0);
+	let startItem = $derived(offset + 1);
+	let endItem = $derived(offset + episodes.length);
+
+	// Calculate displayed page info
+	let displayedPages = $derived(() => {
+		if (!hasNext && !hasPrev) return 1; // Only one page
+		return currentPage;
+	});
 
 	onMount(fetchEpisodes);
 </script>
@@ -59,7 +154,9 @@
 			<p class="hover:text-[#325FEC]"><a href="">Download CSV</a></p>
 			<p class="hover:text-[#325FEC]"><a href="">Source Code</a></p>
 			<p class="hover:text-[#325FEC]"><a href="">Youtube</a></p>
-			<p class="hover:text-[#325FEC]"><a href="">Reference</a></p>
+			<p class="hover:text-[#325FEC]">
+				<a href="https://www.detectiveconanworld.com/wiki/Anime">Reference</a>
+			</p>
 		</div>
 	</div>
 
@@ -104,6 +201,10 @@
 				type="text"
 				placeholder="Episode number, Episode title,  Next’s Conan Hint"
 				class="pr-10 w-full"
+				bind:value={search}
+				on:keydown={(e) => {
+					if (e.key === 'Enter') handleSearch();
+				}}
 			/>
 			<span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
 				<Search />
@@ -111,49 +212,36 @@
 		</div>
 		<!-- Filter dropdown -->
 		<div>
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger class="w-[150px] h-fit">
-					{#snippet child({ props })}
-						<Button {...props} variant="outline">Season</Button>
-					{/snippet}
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content class="w-[150px] h-fit">
-					<DropdownMenu.Group>
-						<DropdownMenu.Label>Appearance</DropdownMenu.Label>
-						<DropdownMenu.Separator />
-						<DropdownMenu.CheckboxItem bind:checked={showStatusBar}>
-							Status Bar
-						</DropdownMenu.CheckboxItem>
-						<DropdownMenu.CheckboxItem bind:checked={showActivityBar} disabled>
-							Activity Bar
-						</DropdownMenu.CheckboxItem>
-						<DropdownMenu.CheckboxItem bind:checked={showPanel}>Panel</DropdownMenu.CheckboxItem>
-					</DropdownMenu.Group>
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
+			<Input
+				type="number"
+				placeholder="Season"
+				bind:value={season}
+				on:input={() => {
+					offset = 0;
+					fetchEpisodes();
+				}}
+			/>
 		</div>
 		<!-- Plot -->
 		<div>
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger class="w-[250px] h-fit">
-					{#snippet child({ props })}
-						<Button {...props} variant="outline">Plot</Button>
-					{/snippet}
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content class="w-[250px] h-fit">
-					<DropdownMenu.Group>
-						<DropdownMenu.Label>Appearance</DropdownMenu.Label>
-						<DropdownMenu.Separator />
-						<DropdownMenu.CheckboxItem bind:checked={showStatusBar}>
-							Status Bar
-						</DropdownMenu.CheckboxItem>
-						<DropdownMenu.CheckboxItem bind:checked={showActivityBar} disabled>
-							Activity Bar
-						</DropdownMenu.CheckboxItem>
-						<DropdownMenu.CheckboxItem bind:checked={showPanel}>Panel</DropdownMenu.CheckboxItem>
-					</DropdownMenu.Group>
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
+			<select
+				multiple
+				bind:value={plot}
+				on:change={handlePlotChange}
+				class="min-w-[180px] p-2 border rounded"
+			>
+				<option value="new">✨New</option>
+				<option value="char">📈Character</option>
+				<option value="romance">❤️Romance</option>
+				<option value="bo">👥Black Organization</option>
+				<option value="fbi">👮‍♂️FBI</option>
+				<option value="mk">🎩Magic Kaito</option>
+				<option value="past">🕰️Past</option>
+				<option value="hh">🧢Heiji Hattori</option>
+				<option value="db">🕵️‍♂️Detective Boys</option>
+				<option value="dc">👓Detective Conan</option>
+				<option value="mko">💎Mysterious Kid</option>
+			</select>
 		</div>
 		<Button class="bg-[#325FEC] text-white">See all result</Button>
 	</div>
@@ -188,7 +276,7 @@
 							<Table.Cell>
 								<a href={ep.episode.link} class="text-blue-600 underline">{ep.episode.label}</a>
 							</Table.Cell>
-							<Table.Cell>{ep.plots ? ep.plots.join(', ') : ''}</Table.Cell>
+							<Table.Cell>{formatPlots(ep.plots)}</Table.Cell>
 							<Table.Cell>{ep.date_jpn}</Table.Cell>
 							<Table.Cell>{ep.date_eng}</Table.Cell>
 							<Table.Cell>{ep.manga_source}</Table.Cell>
@@ -201,8 +289,58 @@
 	</div>
 
 	<!-- Pagination -->
-	<div class="flex gap-4 mt-4">
-		<Button on:click={prevPage} disabled={offset === 0}>Previous</Button>
-		<Button on:click={nextPage}>Next</Button>
+	<div class="flex flex-col gap-4 mt-4">
+		<!-- Pagination Info -->
+		<div class="text-sm text-gray-600 text-center">
+			{#if episodes.length > 0}
+				Showing episodes {startItem}-{endItem} (Page {currentPage})
+				{#if hasNext}
+					• More episodes available
+				{:else}
+					• End of results
+				{/if}
+			{:else}
+				No episodes found
+			{/if}
+		</div>
+
+		<!-- Pagination Controls -->
+		{#if episodes.length > 0}
+			<div class="flex justify-center items-center gap-2">
+				<!-- First Page -->
+				<Button variant="outline" size="sm" on:click={firstPage} disabled={!hasPrev}>First</Button>
+
+				<!-- Previous Page -->
+				<Button variant="outline" size="sm" on:click={prevPage} disabled={!hasPrev}>
+					Previous
+				</Button>
+
+				<!-- Current Page Info -->
+				<div class="px-4 py-2 text-sm bg-gray-100 rounded">
+					Page {currentPage}
+				</div>
+
+				<!-- Next Page -->
+				<Button variant="outline" size="sm" on:click={nextPage} disabled={!hasNext}>Next</Button>
+			</div>
+
+			<!-- Page Size Selector -->
+			<div class="flex justify-center items-center gap-2 text-sm">
+				<span>Items per page:</span>
+				<select
+					bind:value={limit}
+					on:change={() => {
+						offset = 0;
+						fetchEpisodes();
+					}}
+					class="border rounded px-2 py-1"
+				>
+					<option value={10}>10</option>
+					<option value={25}>25</option>
+					<option value={50}>50</option>
+					<option value={100}>100</option>
+				</select>
+			</div>
+		{/if}
 	</div>
 </div>
