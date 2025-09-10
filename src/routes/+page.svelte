@@ -18,11 +18,12 @@
 	let plot = [];
 
 	let episodes = $state([]);
-	let limit = 25;
+	let limit = 50;
 	let offset = $state(0);
 	let loading = $state(false);
 	let error = $state(null);
 	let totalCount = $state(0);
+	let actualDataLength = $state(0); // Track actual data length from backend
 	let currentPage = $state(1);
 
 	async function fetchEpisodes() {
@@ -46,21 +47,28 @@
 			const data = await res.json();
 
 			// Backend returns array directly
-			episodes = data;
+			// Note: episodes assignment will be handled in pagination logic below
 
 			// Update current page based on offset
 			currentPage = Math.floor(offset / limit) + 1;
 
-			// We don't know the exact total count, so we'll use a simple approach:
-			// - If we get exactly 'limit' episodes, there might be more
-			// - If we get less than 'limit', we're at the end
-			const hasMoreData = data.length === limit;
+			// Store actual data length before any trimming
+			actualDataLength = data.length;
 
-			// Set a high totalCount if there might be more data
-			if (hasMoreData) {
-				totalCount = offset + limit + limit; // Add another page worth to enable next
+			if (data.length >= limit) {
+				// Current page has at least the requested amount, there might be more data
+				// Trim to exactly the limit to ensure consistent display
+				episodes = data.length > limit ? data.slice(0, limit) : data;
+				// Set totalCount to allow at least one more page
+				totalCount = Math.max(totalCount, offset + limit + limit);
+			} else if (data.length === 0 && offset > 0) {
+				// Empty page but we have an offset - we've gone too far
+				totalCount = offset;
+				episodes = data;
 			} else {
-				totalCount = offset + data.length; // Exact count to disable next
+				// Partial page - this is the actual end
+				totalCount = offset + data.length;
+				episodes = data;
 			}
 		} catch (e) {
 			error = e.message;
@@ -75,31 +83,16 @@
 	}
 
 	function nextPage() {
-		// Simple check: if current page has full data, allow next page
-		if (episodes.length === limit) {
-			offset = offset + limit;
-			fetchEpisodes();
-		}
+		offset += limit;
+		fetchEpisodes();
 	}
 
 	function prevPage() {
 		if (offset >= limit) {
-			offset = offset - limit;
+			offset -= limit;
 			fetchEpisodes();
 		}
 	}
-
-	function goToPage(page) {
-		offset = (page - 1) * limit;
-		fetchEpisodes();
-	}
-
-	function firstPage() {
-		offset = 0;
-		fetchEpisodes();
-	}
-
-	// Remove lastPage function since we don't know total pages
 
 	function handlePlotChange(event) {
 		plot = Array.from(event.target.selectedOptions).map((option) => option.value);
@@ -129,16 +122,10 @@
 	}
 
 	// Reactive variables for pagination info
-	let hasNext = $derived(episodes.length === limit); // Has next if current page is full
+	let hasNext = $derived(actualDataLength >= limit);
 	let hasPrev = $derived(offset > 0);
 	let startItem = $derived(offset + 1);
 	let endItem = $derived(offset + episodes.length);
-
-	// Calculate displayed page info
-	let displayedPages = $derived(() => {
-		if (!hasNext && !hasPrev) return 1; // Only one page
-		return currentPage;
-	});
 
 	onMount(fetchEpisodes);
 </script>
@@ -227,7 +214,7 @@
 			<select
 				multiple
 				bind:value={plot}
-				on:change={handlePlotChange}
+				onchange={handlePlotChange}
 				class="min-w-[180px] p-2 border rounded"
 			>
 				<option value="new">✨New</option>
@@ -307,13 +294,8 @@
 		<!-- Pagination Controls -->
 		{#if episodes.length > 0}
 			<div class="flex justify-center items-center gap-2">
-				<!-- First Page -->
-				<Button variant="outline" size="sm" on:click={firstPage} disabled={!hasPrev}>First</Button>
-
 				<!-- Previous Page -->
-				<Button variant="outline" size="sm" on:click={prevPage} disabled={!hasPrev}>
-					Previous
-				</Button>
+				<Button variant="outline" size="sm" onclick={prevPage} disabled={!hasPrev}>Previous</Button>
 
 				<!-- Current Page Info -->
 				<div class="px-4 py-2 text-sm bg-gray-100 rounded">
@@ -321,15 +303,15 @@
 				</div>
 
 				<!-- Next Page -->
-				<Button variant="outline" size="sm" on:click={nextPage} disabled={!hasNext}>Next</Button>
+				<Button variant="outline" size="sm" onclick={nextPage} disabled={!hasNext}>Next</Button>
 			</div>
 
 			<!-- Page Size Selector -->
-			<div class="flex justify-center items-center gap-2 text-sm">
+			<!-- <div class="flex justify-center items-center gap-2 text-sm">
 				<span>Items per page:</span>
 				<select
 					bind:value={limit}
-					on:change={() => {
+					onchange={() => {
 						offset = 0;
 						fetchEpisodes();
 					}}
@@ -340,7 +322,7 @@
 					<option value={50}>50</option>
 					<option value={100}>100</option>
 				</select>
-			</div>
+			</div> -->
 		{/if}
 	</div>
 </div>
