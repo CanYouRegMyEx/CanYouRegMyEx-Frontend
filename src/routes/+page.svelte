@@ -14,11 +14,12 @@
 	let showPanel = $state(false);
 
 	let search = '';
-	let season = '';
-	let plot = [];
+	let selectedSeasons = [];
+	let selectedPlots = [];
 
 	let episodes = $state([]);
-	let limit = 50;
+	let availableSeasons = $state([]); // Dynamic seasons from backend
+	let limit = 25;
 	let offset = $state(0);
 	let loading = $state(false);
 	let error = $state(null);
@@ -26,19 +27,57 @@
 	let actualDataLength = $state(0); // Track actual data length from backend
 	let currentPage = $state(1);
 
+	async function fetchAvailableSeasons() {
+		try {
+			const allSeasons = new Set();
+			let offset = 0;
+			const limit = 100;
+			let hasMoreData = true;
+			let batchCount = 0;
+
+			while (hasMoreData && batchCount < 50) {
+				const response = await fetch(
+					`http://127.0.0.1:8000/episodes/?limit=${limit}&offset=${offset}`
+				);
+
+				if (response.ok) {
+					const data = await response.json();
+					data.forEach((episode) => allSeasons.add(episode.season));
+
+					if (data.length < limit) {
+						hasMoreData = false;
+					} else {
+						offset += limit;
+					}
+					batchCount++;
+				} else {
+					hasMoreData = false;
+				}
+			}
+
+			availableSeasons = Array.from(allSeasons).sort((a, b) => a - b);
+		} catch (e) {
+			availableSeasons = Array.from({ length: 30 }, (_, i) => i + 1);
+		}
+	}
+
 	async function fetchEpisodes() {
 		loading = true;
 		error = null;
 		const params = new URLSearchParams({
 			limit,
 			offset,
-			...(search && { filter: search }),
-			...(season && { season: parseInt(season) })
+			...(search && { filter: search })
 		});
 
-		// Add plot parameters as separate query params
-		if (plot && plot.length > 0) {
-			plot.forEach((p) => params.append('plot', p));
+		// Add season parameters as separate query params (multiple seasons allowed)
+		if (selectedSeasons && selectedSeasons.length > 0) {
+			selectedSeasons.forEach((s) => params.append('season', parseInt(s)));
+		}
+
+		// Add plot parameters as separate query params (multiple plots allowed)
+		if (selectedPlots && selectedPlots.length > 0) {
+			selectedPlots.forEach((p) => params.append('plot', p));
 		}
 
 		try {
@@ -94,8 +133,7 @@
 		}
 	}
 
-	function handlePlotChange(event) {
-		plot = Array.from(event.target.selectedOptions).map((option) => option.value);
+	function handleFilterChange() {
 		offset = 0;
 		fetchEpisodes();
 	}
@@ -103,7 +141,7 @@
 	// Plot emoji mapping
 	const plotEmojiMap = {
 		new: '✨',
-		char: '👤',
+		char: '📈',
 		romance: '❤️',
 		bo: '👥',
 		fbi: '👮‍♂️',
@@ -127,7 +165,10 @@
 	let startItem = $derived(offset + 1);
 	let endItem = $derived(offset + episodes.length);
 
-	onMount(fetchEpisodes);
+	onMount(async () => {
+		await fetchAvailableSeasons();
+		fetchEpisodes();
+	});
 </script>
 
 <div class="w-full h-screen flex flex-col">
@@ -138,8 +179,8 @@
 			<h1 class="instrument-serif-regular">CanYouRegMyEx</h1>
 		</div>
 		<div class="flex gap-10">
-			<p class="hover:text-[#325FEC]"><a href="">Download CSV</a></p>
-			<p class="hover:text-[#325FEC]"><a href="">Source Code</a></p>
+			<p class="hover:text-[#325FEC]">Download CSV</p>
+			<p class="hover:text-[#325FEC]"><a href="https://github.com/CanYouRegMyEx">Source Code</a></p>
 			<p class="hover:text-[#325FEC]"><a href="">Youtube</a></p>
 			<p class="hover:text-[#325FEC]">
 				<a href="https://www.detectiveconanworld.com/wiki/Anime">Reference</a>
@@ -197,39 +238,193 @@
 				<Search />
 			</span>
 		</div>
-		<!-- Filter dropdown -->
-		<div>
-			<Input
-				type="number"
-				placeholder="Season"
-				bind:value={season}
-				on:input={() => {
-					offset = 0;
-					fetchEpisodes();
-				}}
-			/>
-		</div>
-		<!-- Plot -->
-		<div>
-			<select
-				multiple
-				bind:value={plot}
-				onchange={handlePlotChange}
-				class="min-w-[180px] p-2 border rounded"
-			>
-				<option value="new">✨New</option>
-				<option value="char">📈Character</option>
-				<option value="romance">❤️Romance</option>
-				<option value="bo">👥Black Organization</option>
-				<option value="fbi">👮‍♂️FBI</option>
-				<option value="mk">🎩Magic Kaito</option>
-				<option value="past">🕰️Past</option>
-				<option value="hh">🧢Heiji Hattori</option>
-				<option value="db">🕵️‍♂️Detective Boys</option>
-				<option value="dc">👓Detective Conan</option>
-				<option value="mko">💎Mysterious Kid</option>
-			</select>
-		</div>
+		<!-- Season Filter Dropdown -->
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger>
+				<Button variant="outline" class="min-w-[180px] justify-between">
+					{selectedSeasons.length === 0
+						? 'Select Seasons'
+						: selectedSeasons.length === 1
+							? `Season ${selectedSeasons[0]}`
+							: `${selectedSeasons.length} Seasons`}
+				</Button>
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content class="w-56 max-h-60 overflow-y-auto">
+				{#each availableSeasons as seasonNum}
+					<DropdownMenu.CheckboxItem
+						checked={selectedSeasons.includes(seasonNum.toString())}
+						onCheckedChange={(checked) => {
+							if (checked) {
+								selectedSeasons = [...selectedSeasons, seasonNum.toString()];
+							} else {
+								selectedSeasons = selectedSeasons.filter((s) => s !== seasonNum.toString());
+							}
+							handleFilterChange();
+						}}
+					>
+						Season {seasonNum}
+					</DropdownMenu.CheckboxItem>
+				{/each}
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
+
+		<!-- Plot Filter Dropdown -->
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger>
+				<Button variant="outline" class="min-w-[180px] justify-between">
+					{selectedPlots.length === 0
+						? 'Select Plots'
+						: selectedPlots.length === 1
+							? selectedPlots[0]
+							: `${selectedPlots.length} Plots`}
+				</Button>
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content class="w-56 max-h-60 overflow-y-auto">
+				<DropdownMenu.CheckboxItem
+					checked={selectedPlots.includes('new')}
+					onCheckedChange={(checked) => {
+						if (checked) {
+							selectedPlots = [...selectedPlots, 'new'];
+						} else {
+							selectedPlots = selectedPlots.filter((p) => p !== 'new');
+						}
+						handleFilterChange();
+					}}
+				>
+					✨ New
+				</DropdownMenu.CheckboxItem>
+				<DropdownMenu.CheckboxItem
+					checked={selectedPlots.includes('char')}
+					onCheckedChange={(checked) => {
+						if (checked) {
+							selectedPlots = [...selectedPlots, 'char'];
+						} else {
+							selectedPlots = selectedPlots.filter((p) => p !== 'char');
+						}
+						handleFilterChange();
+					}}
+				>
+					📈 Character
+				</DropdownMenu.CheckboxItem>
+				<DropdownMenu.CheckboxItem
+					checked={selectedPlots.includes('romance')}
+					onCheckedChange={(checked) => {
+						if (checked) {
+							selectedPlots = [...selectedPlots, 'romance'];
+						} else {
+							selectedPlots = selectedPlots.filter((p) => p !== 'romance');
+						}
+						handleFilterChange();
+					}}
+				>
+					❤️ Romance
+				</DropdownMenu.CheckboxItem>
+				<DropdownMenu.CheckboxItem
+					checked={selectedPlots.includes('bo')}
+					onCheckedChange={(checked) => {
+						if (checked) {
+							selectedPlots = [...selectedPlots, 'bo'];
+						} else {
+							selectedPlots = selectedPlots.filter((p) => p !== 'bo');
+						}
+						handleFilterChange();
+					}}
+				>
+					👥 Black Organization
+				</DropdownMenu.CheckboxItem>
+				<DropdownMenu.CheckboxItem
+					checked={selectedPlots.includes('fbi')}
+					onCheckedChange={(checked) => {
+						if (checked) {
+							selectedPlots = [...selectedPlots, 'fbi'];
+						} else {
+							selectedPlots = selectedPlots.filter((p) => p !== 'fbi');
+						}
+						handleFilterChange();
+					}}
+				>
+					👮‍♂️ FBI
+				</DropdownMenu.CheckboxItem>
+				<DropdownMenu.CheckboxItem
+					checked={selectedPlots.includes('mk')}
+					onCheckedChange={(checked) => {
+						if (checked) {
+							selectedPlots = [...selectedPlots, 'mk'];
+						} else {
+							selectedPlots = selectedPlots.filter((p) => p !== 'mk');
+						}
+						handleFilterChange();
+					}}
+				>
+					🎩 Magic Kaito
+				</DropdownMenu.CheckboxItem>
+				<DropdownMenu.CheckboxItem
+					checked={selectedPlots.includes('past')}
+					onCheckedChange={(checked) => {
+						if (checked) {
+							selectedPlots = [...selectedPlots, 'past'];
+						} else {
+							selectedPlots = selectedPlots.filter((p) => p !== 'past');
+						}
+						handleFilterChange();
+					}}
+				>
+					🕰️ Past
+				</DropdownMenu.CheckboxItem>
+				<DropdownMenu.CheckboxItem
+					checked={selectedPlots.includes('hh')}
+					onCheckedChange={(checked) => {
+						if (checked) {
+							selectedPlots = [...selectedPlots, 'hh'];
+						} else {
+							selectedPlots = selectedPlots.filter((p) => p !== 'hh');
+						}
+						handleFilterChange();
+					}}
+				>
+					🧢 Heiji Hattori
+				</DropdownMenu.CheckboxItem>
+				<DropdownMenu.CheckboxItem
+					checked={selectedPlots.includes('db')}
+					onCheckedChange={(checked) => {
+						if (checked) {
+							selectedPlots = [...selectedPlots, 'db'];
+						} else {
+							selectedPlots = selectedPlots.filter((p) => p !== 'db');
+						}
+						handleFilterChange();
+					}}
+				>
+					🕵️‍♂️ Detective Boys
+				</DropdownMenu.CheckboxItem>
+				<DropdownMenu.CheckboxItem
+					checked={selectedPlots.includes('dc')}
+					onCheckedChange={(checked) => {
+						if (checked) {
+							selectedPlots = [...selectedPlots, 'dc'];
+						} else {
+							selectedPlots = selectedPlots.filter((p) => p !== 'dc');
+						}
+						handleFilterChange();
+					}}
+				>
+					👓 Detective Conan
+				</DropdownMenu.CheckboxItem>
+				<DropdownMenu.CheckboxItem
+					checked={selectedPlots.includes('mko')}
+					onCheckedChange={(checked) => {
+						if (checked) {
+							selectedPlots = [...selectedPlots, 'mko'];
+						} else {
+							selectedPlots = selectedPlots.filter((p) => p !== 'mko');
+						}
+						handleFilterChange();
+					}}
+				>
+					💎 Mysterious Kid
+				</DropdownMenu.CheckboxItem>
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
 		<Button class="bg-[#325FEC] text-white">See all result</Button>
 	</div>
 
