@@ -14,17 +14,30 @@
 	let showPanel = $state(false);
 
 	let search = '';
-	let selectedSeasons = [];
-	let selectedPlots = [];
+	let selectedSeasons = $state([]);
+	let selectedPlots = $state([]);
 
 	let episodes = $state([]);
-	let availableSeasons = $state([]); // Dynamic seasons from backend
+	let availableSeasons = $state([]);
+	let availablePlots = $state([]);
+
+	const plotEmojiMap = {
+		new: '✨',
+		char: '📈',
+		romance: '❤️',
+		bo: '👥',
+		fbi: '👮‍♂️',
+		mk: '🎩',
+		past: '🕰️',
+		db: '🕵️‍♂️'
+	};
+
 	let limit = 25;
 	let offset = $state(0);
 	let loading = $state(false);
 	let error = $state(null);
 	let totalCount = $state(0);
-	let actualDataLength = $state(0); // Track actual data length from backend
+	let actualDataLength = $state(0);
 	let currentPage = $state(1);
 
 	async function fetchAvailableSeasons() {
@@ -61,54 +74,170 @@
 		}
 	}
 
+	async function fetchAvailablePlots() {
+		try {
+			const allPlots = new Set();
+			let offset = 0;
+			const limit = 100;
+			let hasMoreData = true;
+			let batchCount = 0;
+
+			while (hasMoreData && batchCount < 50) {
+				const response = await fetch(
+					`http://127.0.0.1:8000/episodes/?limit=${limit}&offset=${offset}`
+				);
+
+				if (response.ok) {
+					const data = await response.json();
+
+					data.forEach((episode) => {
+						if (episode.plots && Array.isArray(episode.plots)) {
+							episode.plots.forEach((plot) => {
+								allPlots.add(plot);
+							});
+						}
+					});
+
+					if (data.length < limit) {
+						hasMoreData = false;
+					} else {
+						offset += limit;
+					}
+					batchCount++;
+				} else {
+					hasMoreData = false;
+				}
+			}
+
+			const plotNames = {
+				new: 'New Character',
+				char: 'Character Development',
+				romance: 'Romance',
+				bo: 'Black Organization',
+				fbi: 'FBI',
+				mk: 'Magic Kaito',
+				past: 'Character Past',
+				db: 'Detective Boys'
+			};
+
+			const plots = Array.from(allPlots)
+				.sort()
+				.map((plot) => ({
+					value: plot,
+					label: `${plotEmojiMap[plot] || '📺'} ${plotNames[plot] || plot.charAt(0).toUpperCase() + plot.slice(1)}`,
+					emoji: plotEmojiMap[plot] || '📺'
+				}));
+
+			availablePlots = plots;
+		} catch (e) {
+			availablePlots = [
+				{ value: 'new', label: '✨ New Character', emoji: '✨' },
+				{ value: 'char', label: '📈 Character Development', emoji: '📈' },
+				{ value: 'romance', label: '❤️ Romance', emoji: '❤️' },
+				{ value: 'bo', label: '👥 Black Organization', emoji: '👥' },
+				{ value: 'fbi', label: '👮‍♂️ FBI', emoji: '👮‍♂️' },
+				{ value: 'mk', label: '🎩 Magic Kaito', emoji: '🎩' },
+				{ value: 'past', label: '🕰️ Character Past', emoji: '🕰️' },
+				{ value: 'db', label: '🕵️‍♂️ Detective Boys', emoji: '🕵️‍♂️' }
+			];
+		}
+	}
+
 	async function fetchEpisodes() {
 		loading = true;
 		error = null;
-		const params = new URLSearchParams({
-			limit,
-			offset,
-			...(search && { filter: search })
-		});
 
-		// Add season parameters as separate query params (multiple seasons allowed)
+		const hasPlotFilter = selectedPlots.length > 0;
+
+		if (hasPlotFilter) {
+			await fetchEpisodesWithPlotSearch();
+		} else {
+			await fetchEpisodesNormal();
+		}
+	}
+
+	async function fetchEpisodesNormal() {
+		const params = new URLSearchParams();
+
+		if (search) {
+			params.append('filter', search);
+		}
+
 		if (selectedSeasons && selectedSeasons.length > 0) {
 			selectedSeasons.forEach((s) => params.append('season', parseInt(s)));
 		}
 
-		// Add plot parameters as separate query params (multiple plots allowed)
-		if (selectedPlots && selectedPlots.length > 0) {
-			selectedPlots.forEach((p) => params.append('plot', p));
-		}
+		params.append('limit', limit);
+		params.append('offset', offset);
+
+		const finalUrl = `http://127.0.0.1:8000/episodes/?${params.toString()}`;
 
 		try {
-			const res = await fetch(`http://127.0.0.1:8000/episodes/?${params.toString()}`);
+			const res = await fetch(finalUrl);
 			if (!res.ok) throw new Error('Failed to fetch episodes');
 			const data = await res.json();
 
-			// Backend returns array directly
-			// Note: episodes assignment will be handled in pagination logic below
-
-			// Update current page based on offset
 			currentPage = Math.floor(offset / limit) + 1;
-
-			// Store actual data length before any trimming
 			actualDataLength = data.length;
+			episodes = data;
+			totalCount = data.length === limit ? offset + limit + 1 : offset + data.length;
+		} catch (e) {
+			error = e.message;
+		} finally {
+			loading = false;
+		}
+	}
 
-			if (data.length >= limit) {
-				// Current page has at least the requested amount, there might be more data
-				// Trim to exactly the limit to ensure consistent display
-				episodes = data.length > limit ? data.slice(0, limit) : data;
-				// Set totalCount to allow at least one more page
-				totalCount = Math.max(totalCount, offset + limit + limit);
-			} else if (data.length === 0 && offset > 0) {
-				// Empty page but we have an offset - we've gone too far
-				totalCount = offset;
-				episodes = data;
-			} else {
-				// Partial page - this is the actual end
-				totalCount = offset + data.length;
-				episodes = data;
+	async function fetchEpisodesWithPlotSearch() {
+		const allResults = [];
+		const targetResultsNeeded = limit;
+		const currentPageStart = offset;
+		let searchOffset = 0;
+		const maxSearchRange = 1500;
+
+		try {
+			while (
+				allResults.length < targetResultsNeeded + currentPageStart &&
+				searchOffset < maxSearchRange
+			) {
+				const params = new URLSearchParams();
+
+				if (search) {
+					params.append('filter', search);
+				}
+				if (selectedSeasons.length > 0) {
+					selectedSeasons.forEach((s) => params.append('season', parseInt(s)));
+				}
+				if (selectedPlots.length > 0) {
+					selectedPlots.forEach((p) => params.append('plot', p));
+				}
+
+				params.append('limit', 100);
+				params.append('offset', searchOffset);
+
+				const searchUrl = `http://127.0.0.1:8000/episodes/?${params.toString()}`;
+
+				const res = await fetch(searchUrl);
+				if (res.ok) {
+					const data = await res.json();
+					allResults.push(...data);
+
+					if (data.length < 100) {
+						break;
+					}
+				} else {
+					break;
+				}
+
+				searchOffset += 100;
 			}
+
+			currentPage = Math.floor(offset / limit) + 1;
+			const startIndex = currentPageStart;
+			const endIndex = startIndex + limit;
+			episodes = allResults.slice(startIndex, endIndex);
+			actualDataLength = episodes.length;
+			totalCount = allResults.length;
 		} catch (e) {
 			error = e.message;
 		} finally {
@@ -138,35 +267,26 @@
 		fetchEpisodes();
 	}
 
-	// Plot emoji mapping
-	const plotEmojiMap = {
-		new: '✨',
-		char: '📈',
-		romance: '❤️',
-		bo: '👥',
-		fbi: '👮‍♂️',
-		mk: '🎩',
-		past: '🕰️',
-		hh: '🧢',
-		db: '🕵️‍♂️',
-		dc: '👓',
-		mko: '💎'
-	};
+	function seeAllResults() {
+		search = '';
+		selectedSeasons = [];
+		selectedPlots = [];
+		offset = 0;
+		fetchEpisodes();
+	}
 
-	// Function to format plots with emojis
 	function formatPlots(plots) {
 		if (!plots || plots.length === 0) return '';
 		return plots.map((plot) => plotEmojiMap[plot] || plot).join(' ');
 	}
-
-	// Reactive variables for pagination info
-	let hasNext = $derived(actualDataLength >= limit);
+	let hasNext = $derived(totalCount > offset + actualDataLength);
 	let hasPrev = $derived(offset > 0);
 	let startItem = $derived(offset + 1);
 	let endItem = $derived(offset + episodes.length);
 
 	onMount(async () => {
 		await fetchAvailableSeasons();
+		await fetchAvailablePlots();
 		fetchEpisodes();
 	});
 </script>
@@ -181,7 +301,7 @@
 		<div class="flex gap-10">
 			<p class="hover:text-[#325FEC]">Download CSV</p>
 			<p class="hover:text-[#325FEC]"><a href="https://github.com/CanYouRegMyEx">Source Code</a></p>
-			<p class="hover:text-[#325FEC]"><a href="">Youtube</a></p>
+			<p class="hover:text-[#325FEC]"><a href="#">Youtube</a></p>
 			<p class="hover:text-[#325FEC]">
 				<a href="https://www.detectiveconanworld.com/wiki/Anime">Reference</a>
 			</p>
@@ -275,157 +395,29 @@
 					{selectedPlots.length === 0
 						? 'Select Plots'
 						: selectedPlots.length === 1
-							? selectedPlots[0]
+							? availablePlots.find((p) => p.value === selectedPlots[0])?.label || selectedPlots[0]
 							: `${selectedPlots.length} Plots`}
 				</Button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56 max-h-60 overflow-y-auto">
-				<DropdownMenu.CheckboxItem
-					checked={selectedPlots.includes('new')}
-					onCheckedChange={(checked) => {
-						if (checked) {
-							selectedPlots = [...selectedPlots, 'new'];
-						} else {
-							selectedPlots = selectedPlots.filter((p) => p !== 'new');
-						}
-						handleFilterChange();
-					}}
-				>
-					✨ New
-				</DropdownMenu.CheckboxItem>
-				<DropdownMenu.CheckboxItem
-					checked={selectedPlots.includes('char')}
-					onCheckedChange={(checked) => {
-						if (checked) {
-							selectedPlots = [...selectedPlots, 'char'];
-						} else {
-							selectedPlots = selectedPlots.filter((p) => p !== 'char');
-						}
-						handleFilterChange();
-					}}
-				>
-					📈 Character
-				</DropdownMenu.CheckboxItem>
-				<DropdownMenu.CheckboxItem
-					checked={selectedPlots.includes('romance')}
-					onCheckedChange={(checked) => {
-						if (checked) {
-							selectedPlots = [...selectedPlots, 'romance'];
-						} else {
-							selectedPlots = selectedPlots.filter((p) => p !== 'romance');
-						}
-						handleFilterChange();
-					}}
-				>
-					❤️ Romance
-				</DropdownMenu.CheckboxItem>
-				<DropdownMenu.CheckboxItem
-					checked={selectedPlots.includes('bo')}
-					onCheckedChange={(checked) => {
-						if (checked) {
-							selectedPlots = [...selectedPlots, 'bo'];
-						} else {
-							selectedPlots = selectedPlots.filter((p) => p !== 'bo');
-						}
-						handleFilterChange();
-					}}
-				>
-					👥 Black Organization
-				</DropdownMenu.CheckboxItem>
-				<DropdownMenu.CheckboxItem
-					checked={selectedPlots.includes('fbi')}
-					onCheckedChange={(checked) => {
-						if (checked) {
-							selectedPlots = [...selectedPlots, 'fbi'];
-						} else {
-							selectedPlots = selectedPlots.filter((p) => p !== 'fbi');
-						}
-						handleFilterChange();
-					}}
-				>
-					👮‍♂️ FBI
-				</DropdownMenu.CheckboxItem>
-				<DropdownMenu.CheckboxItem
-					checked={selectedPlots.includes('mk')}
-					onCheckedChange={(checked) => {
-						if (checked) {
-							selectedPlots = [...selectedPlots, 'mk'];
-						} else {
-							selectedPlots = selectedPlots.filter((p) => p !== 'mk');
-						}
-						handleFilterChange();
-					}}
-				>
-					🎩 Magic Kaito
-				</DropdownMenu.CheckboxItem>
-				<DropdownMenu.CheckboxItem
-					checked={selectedPlots.includes('past')}
-					onCheckedChange={(checked) => {
-						if (checked) {
-							selectedPlots = [...selectedPlots, 'past'];
-						} else {
-							selectedPlots = selectedPlots.filter((p) => p !== 'past');
-						}
-						handleFilterChange();
-					}}
-				>
-					🕰️ Past
-				</DropdownMenu.CheckboxItem>
-				<DropdownMenu.CheckboxItem
-					checked={selectedPlots.includes('hh')}
-					onCheckedChange={(checked) => {
-						if (checked) {
-							selectedPlots = [...selectedPlots, 'hh'];
-						} else {
-							selectedPlots = selectedPlots.filter((p) => p !== 'hh');
-						}
-						handleFilterChange();
-					}}
-				>
-					🧢 Heiji Hattori
-				</DropdownMenu.CheckboxItem>
-				<DropdownMenu.CheckboxItem
-					checked={selectedPlots.includes('db')}
-					onCheckedChange={(checked) => {
-						if (checked) {
-							selectedPlots = [...selectedPlots, 'db'];
-						} else {
-							selectedPlots = selectedPlots.filter((p) => p !== 'db');
-						}
-						handleFilterChange();
-					}}
-				>
-					🕵️‍♂️ Detective Boys
-				</DropdownMenu.CheckboxItem>
-				<DropdownMenu.CheckboxItem
-					checked={selectedPlots.includes('dc')}
-					onCheckedChange={(checked) => {
-						if (checked) {
-							selectedPlots = [...selectedPlots, 'dc'];
-						} else {
-							selectedPlots = selectedPlots.filter((p) => p !== 'dc');
-						}
-						handleFilterChange();
-					}}
-				>
-					👓 Detective Conan
-				</DropdownMenu.CheckboxItem>
-				<DropdownMenu.CheckboxItem
-					checked={selectedPlots.includes('mko')}
-					onCheckedChange={(checked) => {
-						if (checked) {
-							selectedPlots = [...selectedPlots, 'mko'];
-						} else {
-							selectedPlots = selectedPlots.filter((p) => p !== 'mko');
-						}
-						handleFilterChange();
-					}}
-				>
-					💎 Mysterious Kid
-				</DropdownMenu.CheckboxItem>
+				{#each availablePlots as plot}
+					<DropdownMenu.CheckboxItem
+						checked={selectedPlots.includes(plot.value)}
+						onCheckedChange={(checked) => {
+							if (checked) {
+								selectedPlots = [...selectedPlots, plot.value];
+							} else {
+								selectedPlots = selectedPlots.filter((p) => p !== plot.value);
+							}
+							handleFilterChange();
+						}}
+					>
+						{plot.label}
+					</DropdownMenu.CheckboxItem>
+				{/each}
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
-		<Button class="bg-[#325FEC] text-white">See all result</Button>
+		<Button class="bg-[#325FEC] text-white" onclick={seeAllResults}>See all result</Button>
 	</div>
 
 	<!-- Table -->
