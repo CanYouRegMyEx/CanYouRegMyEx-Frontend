@@ -469,7 +469,12 @@
 							<Table.Cell>{ep.index_jpn}</Table.Cell>
 							<Table.Cell>{ep.index_int}</Table.Cell>
 							<Table.Cell>
-								<a href={ep.episode.link} class="text-blue-600 underline">{ep.episode.label}</a>
+								<a
+									href="/episode?link={encodeURIComponent(ep.episode.link)}"
+									class="text-blue-600 hover:text-blue-800 underline cursor-pointer"
+								>
+									{ep.episode.label}
+								</a>
 							</Table.Cell>
 							<Table.Cell>{formatPlots(ep.plots)}</Table.Cell>
 							<Table.Cell>{ep.date_jpn}</Table.Cell>
