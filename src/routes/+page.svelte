@@ -161,13 +161,15 @@
 
 		if (search) {
 			params.append('filter', search);
+			params.append('limit', 100);
+		} else {
+			params.append('limit', limit);
 		}
 
 		if (selectedSeasons && selectedSeasons.length > 0) {
 			selectedSeasons.forEach((s) => params.append('season', parseInt(s)));
 		}
 
-		params.append('limit', limit);
 		params.append('offset', offset);
 
 		const finalUrl = `http://127.0.0.1:8000/episodes/?${params.toString()}`;
@@ -180,7 +182,12 @@
 			currentPage = Math.floor(offset / limit) + 1;
 			actualDataLength = data.length;
 			episodes = data;
-			totalCount = data.length === limit ? offset + limit + 1 : offset + data.length;
+
+			if (search) {
+				totalCount = data.length;
+			} else {
+				totalCount = data.length === limit ? offset + limit + 1 : offset + data.length;
+			}
 		} catch (e) {
 			error = e.message;
 		} finally {
@@ -272,9 +279,17 @@
 		selectedSeasons = [];
 		selectedPlots = [];
 		offset = 0;
+
+		setTimeout(() => {
+			const inputElement = document.querySelector('input[type="text"]');
+			if (inputElement) {
+				inputElement.value = '';
+				inputElement.blur();
+			}
+		}, 0);
+
 		fetchEpisodes();
 	}
-
 	function formatPlots(plots) {
 		if (!plots || plots.length === 0) return '';
 		return plots.map((plot) => plotEmojiMap[plot] || plot).join(' ');
@@ -330,7 +345,7 @@
 	</div>
 
 	<!--Marquee Banner -->
-	<div class="bg-[#325FEC] p-7 overflow-hidden">
+	<div class="bg-[#325FEC] p-3 overflow-hidden">
 		<h2 class="text-white marquee">
 			There is only one truth, and I will uncover it. I’m Edogawa Conan, a detective.
 		</h2>
@@ -347,16 +362,22 @@
 		<div class="relative w-2xl max-w-2xl max-h-16">
 			<Input
 				type="text"
-				placeholder="Episode number, Episode title,  Next’s Conan Hint"
+				placeholder="Episode number, Episode title,  Next's Conan Hint"
 				class="pr-10 w-full"
 				bind:value={search}
 				on:keydown={(e) => {
-					if (e.key === 'Enter') handleSearch();
+					if (e.key === 'Enter') {
+						handleSearch();
+					}
 				}}
 			/>
-			<span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+			<button
+				onclick={handleSearch}
+				class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#325FEC] cursor-pointer transition-colors"
+				type="button"
+			>
 				<Search />
-			</span>
+			</button>
 		</div>
 		<!-- Season Filter Dropdown -->
 		<DropdownMenu.Root>
