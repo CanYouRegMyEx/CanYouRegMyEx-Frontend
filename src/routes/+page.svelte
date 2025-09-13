@@ -306,7 +306,7 @@
 	});
 </script>
 
-<div class="w-full h-screen flex flex-col">
+<div class="w-full h-fit flex flex-col">
 	<!-- Navbar -->
 	<div class="bg-white w-full h-fit max-h-[100px] flex justify-between items-center px-10 py-1">
 		<div class="flex items-center gap-4">
@@ -353,7 +353,7 @@
 </div>
 
 <!-- Episode List -->
-<div class="w-full h-fit flex flex-col gap-10 p-32">
+<div class="w-full h-fit flex flex-col gap-10 p-24">
 	<h1>All Episodes</h1>
 
 	<!-- Tools bar -->
@@ -469,7 +469,12 @@
 							<Table.Cell>{ep.index_jpn}</Table.Cell>
 							<Table.Cell>{ep.index_int}</Table.Cell>
 							<Table.Cell>
-								<a href={ep.episode.link} class="text-blue-600 underline">{ep.episode.label}</a>
+								<a
+									href="/episode?link={encodeURIComponent(ep.episode.link)}"
+									class="text-blue-600 hover:text-blue-800 underline cursor-pointer"
+								>
+									{ep.episode.label}
+								</a>
 							</Table.Cell>
 							<Table.Cell>{formatPlots(ep.plots)}</Table.Cell>
 							<Table.Cell>{ep.date_jpn}</Table.Cell>
