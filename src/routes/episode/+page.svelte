@@ -376,7 +376,7 @@
 								<Table.Cell class="text-gray-600">{bgm.Translation}</Table.Cell>
 								<Table.Cell class="text-right">
 									<a
-										href={`/ost/${encodeURIComponent(bgm.OST_name.toLowerCase().replace(/\s+/g, '-'))}`}
+										href={`/song/${encodeURIComponent(bgm.OST_name.replace(/\s+/g, '_'))}`}
 										class="text-blue-600 hover:text-blue-800 underline text-sm cursor-pointer hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-200"
 									>
 										{bgm.OST_name}
@@ -408,7 +408,7 @@
 							<div class="flex flex-col">
 								<span class="text-xs font-medium text-gray-500 uppercase tracking-wide">OST</span>
 								<a
-									href={`/ost/${encodeURIComponent(bgm.OST_name.toLowerCase().replace(/\s+/g, '-'))}`}
+									href={`/song/${encodeURIComponent(bgm.OST_name.replace(/\s+/g, '_'))}`}
 									class="text-blue-600 hover:text-blue-800 underline text-sm w-fit cursor-pointer hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-200"
 								>
 									{bgm.OST_name}

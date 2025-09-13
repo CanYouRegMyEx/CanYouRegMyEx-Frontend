@@ -1,4 +1,8 @@
 <script>
+	import { afterNavigate } from '$app/navigation';
+	afterNavigate(() => {
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	});
 	import CastMember from '$lib/components/ui/cast-member';
 	import LyricsToggle from '$lib/components/ui/lyrics-toggle';
 	import FlipCard from '$lib/components/ui/flip-card';
