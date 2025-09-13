@@ -8,6 +8,8 @@
 		CharacterLoading,
 		CharacterError
 	} from '$lib/components/ui/character-profile/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { ArrowLeft } from 'lucide-svelte';
 
 	/** @type {import('./$types').PageData} */
 	let { data } = $props();
@@ -57,7 +59,19 @@
 	<title>{characterData?.name || 'Loading...'} - CanYouRegMyEx</title>
 </svelte:head>
 
-<div style="background: linear-gradient(336.19deg, #FFFFFF 56.55%, #EBE7FF 100.92%); min-height: 100vh;">
+<div style="background: linear-gradient(336.19deg, #FFFFFF 56.55%, #EBE7FF 100.92%); min-height: 100vh;" class="relative">
+	<!-- Back Button -->
+	<div class="absolute top-4 left-4 z-10">
+		<Button
+			onclick={() => window.history.back()}
+			variant="outline"
+			class="flex items-center gap-2 bg-white/80 backdrop-blur-sm border-white/30 hover:bg-white/95 transition-all duration-200 shadow-lg hover:shadow-xl"
+		>
+			<ArrowLeft class="w-4 h-4" />
+			Back to Episode
+		</Button>
+	</div>
+
 	{#if data?.error}
 		<!-- Error State -->
 		<CharacterError 
