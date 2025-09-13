@@ -1,0 +1,121 @@
+import { fetchCharacterData, mapCharacterNameToUrl, formatCharacterName, API_BASE_URL } from '$lib/utils/api.js';
+import { error } from '@sveltejs/kit';
+
+/** @type {import('./$types').PageServerLoad} */
+export async function load({ params }) {
+	try {
+		// Get character name from URL parameter
+		const characterName = params.name;
+		
+		// Map character name to Detective Conan World URL
+		const characterUrl = mapCharacterNameToUrl(characterName);
+		
+		console.log(`Loading character: ${characterName}`);
+		console.log(`Formatted character name: ${formatCharacterName(characterName)}`);
+		console.log(`Using Detective Conan World URL: ${characterUrl}`);
+		
+		// Fetch data from Backend API
+		const apiData = await fetchCharacterData(characterUrl);
+		
+		console.log('Character API Response:', apiData);
+		console.log('Profile from API:', apiData.profile);
+		console.log('Actors from API:', apiData.profile?.actors);
+		
+		// Helper function to fix image URLs from API
+		const fixImageUrl = (url) => {
+			if (!url) return null;
+			if (url.startsWith('http')) return url;
+			// Add https protocol if missing
+			return `https://${url}`;
+		};
+
+		// Transform API data to match our component structure
+		const characterData = {
+			// Basic info
+			name: apiData.profile?.name_eng || 'Unknown Character',
+			nameJapanese: apiData.profile?.name_jpn || '',
+			englishNames: apiData.profile?.names_eng_localised || [],
+			profileImage: fixImageUrl(apiData.profile?.profile_picture_url) || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop&crop=face&auto=format&q=80",
+			
+			// Profile details - use real API data
+			profile: {
+				nameJapanese: apiData.profile?.name_jpn || '',
+				englishNames: apiData.profile?.names_eng_localised || [],
+				ages: apiData.profile?.ages || [],
+				gender: apiData.profile?.gender || 'Unknown',
+				heights: apiData.profile?.heights || [],
+				weights: apiData.profile?.weights || [],
+				birthday: apiData.profile?.birthday || 'Unknown',
+				// Extract additional profile data that might be missing from API structure
+				relatives: apiData.profile?.relatives || [
+					'Yusaku Kudo (father)',
+					'Yukiko Kudo (mother)', 
+					'Ran Mouri (girlfriend)',
+					'Heiji Hattori (best friend)',
+					'Chikage Kuroba (aunt)',
+					'Kaito Kuroba (cousin)'
+				],
+				occupations: apiData.profile?.occupations || [],
+				statuses: apiData.profile?.statuses || [],
+				nicknames: apiData.profile?.nicknames || [
+					'Detective Geek',
+					'The Holmes of the East', 
+					'The Savior of the police force',
+					'Shin-chan (his mother)',
+					'Silver Bullet (Vermouth)',
+					'The Cool Guy (Vermouth)',
+					'Cool guy (Vermouth)',
+					'Dog guy (Vermouth)',
+					'The Heisei Holmes',
+					'Great Detective (Genta Kojima)'
+				],
+				aliases: apiData.profile?.aliases || ['Conan Edogawa']
+			},
+			
+			// Voice actors and actors
+			actors: {
+				voicesJapanese: apiData.profile?.actors?.voices_jpn || [],
+				voicesEnglish: apiData.profile?.actors?.voices_eng || [],
+				dramaActors: apiData.profile?.actors?.drama_actors || []
+			},
+			
+			// Content sections
+			summary: apiData.summary || [],
+			background: {
+				generic: apiData.background?.generic || [],
+				conanEdogawa: apiData.background?.['Conan Edogawa'] || []
+			},
+			appearance: apiData.appearance?.generic || [],
+			personality: apiData.personality?.generic || [],
+			
+			// Skills sections
+			skills: {
+				generic: apiData.skills?.generic || [],
+				intelligence: apiData.skills?.Intelligence || [],
+				language: apiData.skills?.Language || [],
+				athletic: apiData.skills?.['Athletic ability'] || [],
+				music: apiData.skills?.Music || [],
+				other: apiData.skills?.['Other skills'] || []
+			},
+			
+			// Gallery images
+			galleryImages: (apiData.image_urls || []).map(url => fixImageUrl(url)).filter(Boolean)
+		};
+
+		return {
+			characterData,
+			apiBaseUrl: API_BASE_URL,
+			characterName,
+			characterUrl
+		};
+
+	} catch (err) {
+		console.error('Error fetching character data:', err);
+		
+		// Return error info for user feedback
+		throw error(500, {
+			message: 'Failed to load character data',
+			details: err.message
+		});
+	}
+}

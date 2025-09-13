@@ -91,3 +91,40 @@ export function mapSongNameToUrl(songName) {
 export function formatSongName(songName) {
 	return decodeURIComponent(songName).replace(/_/g, ' ');
 }
+
+/**
+ * Get character data from Backend Character API
+ * @param {string} characterUrl - Character page URL to crawl
+ * @returns {Promise<Object>} - Character data from Backend
+ */
+export async function fetchCharacterData(characterUrl) {
+	return fetchFromApi('/character', { character_page_url: characterUrl });
+}
+
+/**
+ * Map character name from URL to Detective Conan World URL
+ * @param {string} characterName - Name of the character from URL parameter
+ * @returns {string} - Detective Conan World URL for the character
+ */
+export function mapCharacterNameToUrl(characterName) {
+	// URL decode the character name
+	const decodedName = decodeURIComponent(characterName);
+	
+	// Replace underscores with spaces and format properly
+	const formattedName = decodedName.replace(/_/g, ' ');
+	
+	// Construct Detective Conan World URL
+	// Convert spaces back to underscores for the URL
+	const urlName = formattedName.replace(/ /g, '_');
+	
+	return `https://www.detectiveconanworld.com/wiki/${urlName}`;
+}
+
+/**
+ * Convert character name from various formats to a clean display name
+ * @param {string} characterName - Raw character name from URL
+ * @returns {string} - Clean character name for display
+ */
+export function formatCharacterName(characterName) {
+	return decodeURIComponent(characterName).replace(/_/g, ' ');
+}

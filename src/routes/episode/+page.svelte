@@ -132,13 +132,10 @@
 		<!-- Card list -->
 		<div class="flex flex-wrap gap-4">
 			{#each episode.main_characters || [] as character}
-				<Card.Root
-					class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300 hover:border-blue-300"
-					onclick={() => {
-						// Mock navigation to character detail page
-						window.location.href = `/character/${encodeURIComponent(character.name_eng.toLowerCase().replace(/\s+/g, '-'))}`;
-					}}
-				>
+				<a href="/character/{encodeURIComponent(character.name_eng || 'Unknown')}" class="no-underline">
+					<Card.Root
+						class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300 hover:border-blue-300"
+					>
 					<Card.Header
 						class="w-full h-auto instrument-serif-regular text-[28px] tracking-[-0.02em] text-center"
 					>
@@ -161,6 +158,7 @@
 						{/each}
 					</Card.Footer>
 				</Card.Root>
+				</a>
 			{/each}
 		</div>
 	</div>
@@ -234,13 +232,10 @@
 
 				<div class="flex flex-wrap gap-4">
 					{#each episode.side_characters || [] as person}
-						<Card.Root
-							class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300 hover:border-blue-300"
-							onclick={() => {
-								// Mock navigation to character detail page
-								window.location.href = `/character/${encodeURIComponent(person.name_eng.toLowerCase().replace(/\s+/g, '-'))}`;
-							}}
-						>
+						<a href="/character/{encodeURIComponent(person.name_eng || 'Unknown')}" class="no-underline">
+							<Card.Root
+								class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300 hover:border-blue-300"
+							>
 							<Card.Header
 								class="w-full h-auto instrument-serif-regular text-[28px] tracking-[-0.02em] text-center"
 							>
@@ -263,6 +258,7 @@
 								{/each}
 							</Card.Footer>
 						</Card.Root>
+						</a>
 					{/each}
 				</div>
 			</div>
