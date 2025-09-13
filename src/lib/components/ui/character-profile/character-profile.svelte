@@ -157,10 +157,6 @@
 		console.log('Final actors data:', data);
 		actorsData = data;
 	});
-
-	// Debug the final arrays
-	console.log('ProfileData length:', profileData.length);
-	console.log('ActorsData length:', actorsData.length);
 </script>
 
 <div class={cn("bg-white py-8", className)} {...restProps}>
