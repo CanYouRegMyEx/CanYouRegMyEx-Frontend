@@ -31,7 +31,7 @@
 			<!-- Character Info -->
 			<div class="flex-1 space-y-6">
 				<div>
-					<h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
+					<h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-2" style="color: #325FEC;">
 						{character?.name || 'Loading...'}
 					</h1>
 					{#if character?.nameJapanese}

@@ -98,8 +98,8 @@
 						class="flex items-center justify-between w-full text-left mb-6 focus:outline-none"
 						onclick={() => backgroundExpanded = !backgroundExpanded}
 					>
-						<h2 class="text-2xl font-bold text-gray-900">
-							Background
+						<h2 class="text-2xl font-bold text-gray-900" style="color: #325FEC;">
+							Backgrounds
 						</h2>
 						<svg 
 							class="w-6 h-6 text-gray-500 transform transition-transform duration-200"
@@ -138,7 +138,7 @@
 						class="flex items-center justify-between w-full text-left mb-6 focus:outline-none"
 						onclick={() => personalityExpanded = !personalityExpanded}
 					>
-						<h2 class="text-2xl font-bold text-gray-900">
+						<h2 class="text-2xl font-bold text-gray-900" style="color: #325FEC;">
 							Personality
 						</h2>
 						<svg 
@@ -170,7 +170,7 @@
 						class="flex items-center justify-between w-full text-left mb-6 focus:outline-none"
 						onclick={() => appearanceExpanded = !appearanceExpanded}
 					>
-						<h2 class="text-2xl font-bold text-gray-900">
+						<h2 class="text-2xl font-bold text-gray-900" style="color: #325FEC;">
 							Appearance
 						</h2>
 						<svg 
@@ -202,7 +202,7 @@
 						class="flex items-center justify-between w-full text-left mb-6 focus:outline-none"
 						onclick={() => skillsExpanded = !skillsExpanded}
 					>
-						<h2 class="text-2xl font-bold text-gray-900">
+						<h2 class="text-2xl font-bold text-gray-900" style="color: #325FEC;">
 							Skills & Abilities
 						</h2>
 						<svg 
