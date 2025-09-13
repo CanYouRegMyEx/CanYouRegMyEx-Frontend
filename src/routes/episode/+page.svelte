@@ -90,7 +90,7 @@
 {:else if episode}
 	<!-- Description -->
 	<div
-		class="w-full h-screen opacity-100 flex flex-col items-center justify-center sm:gap-8 md:gap-12 lg:gap-14 xl:gap-18 2xl:gap-20 py-20 sm:px-7 md:px-14 lg:px-32 xl:px-60 2xl:px-70"
+		class="w-full h-fit opacity-100 flex flex-col items-center justify-center sm:gap-8 md:gap-12 lg:gap-14 xl:gap-18 2xl:gap-20 sm:py-10 md:py-12 lg:py-16 xl:py-20 2xl:py-20 sm:px-7 md:px-14 lg:px-32 xl:px-60 2xl:px-70"
 		style="background: radial-gradient(163% 100% at 50% 111.9%, #132952 1.8%, #4DA0FF 31.24%, #CCC4FF 50.9%, #EBF1FF 76.28%);"
 	>
 		<div class="absolute top-4 left-4">
@@ -110,24 +110,9 @@
 				<h3>Episode {episode.episode_number} / Season {episode.season}</h3>
 				<h4>{episode.airdate?.join(' / ') || 'Air Date'}</h4>
 			</div>
-			<div class="flex flex-wrap gap-2 mb-4">
-				<Badge variant="secondary" class="text-lg">
-					📺 Episode {episode.international_episode_number}
-				</Badge>
-			</div>
-			<p class="max-w-4xl text-center">
+			<p class="flex justify-center items-center">
 				{episode.description || 'Episode description not available.'}
 			</p>
-			<div class="flex gap-4 mt-4">
-				<a
-					href="{BASE_URL}{new URLSearchParams(window.location.search).get('link')}"
-					target="_blank"
-					class="inline-flex items-center gap-2 bg-white text-[#325FEC] px-4 py-2 rounded-lg hover:bg-gray-50 font-medium"
-				>
-					<ExternalLink class="w-4 h-4" />
-					View on Detective Conan World
-				</a>
-			</div>
 		</div>
 
 		<div class="object-cover rounded-[10px] w-[507px] h-fit rotate-[0deg] opacity-100">
@@ -141,13 +126,18 @@
 
 	<!-- Cast -->
 	<div
-		class="w-full h-fit opacity-100 bg-[linear-gradient(245.33deg,_#EBE7FF_11.69%,_#FFFFFF_54.37%)] flex flex-col items-center py-20 gap-10 sm:px-16 md:px-24 lg:px-26 xl:px-30 2xl:px-36"
+		class="w-full h-fit opacity-100 bg-[linear-gradient(245.33deg,_#EBE7FF_11.69%,_#FFFFFF_54.37%)] flex flex-col items-center sm:py-10 md:py-12 lg:py-16 xl:py-20 2xl:py-20 gap-10 sm:px-16 md:px-24 lg:px-26 xl:px-30 2xl:px-36"
 	>
 		<h1 class="self-start">Cast</h1>
+		<!-- Card list -->
 		<div class="flex flex-wrap gap-4">
 			{#each episode.main_characters || [] as character}
 				<Card.Root
-					class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200"
+					class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300 hover:border-blue-300"
+					onclick={() => {
+						// Mock navigation to character detail page
+						window.location.href = `/character/${encodeURIComponent(character.name_eng.toLowerCase().replace(/\s+/g, '-'))}`;
+					}}
 				>
 					<Card.Header
 						class="w-full h-auto instrument-serif-regular text-[28px] tracking-[-0.02em] text-center"
@@ -184,32 +174,46 @@
 		<div class="flex flex-col gap-10">
 			<h3 class="text-black">Case</h3>
 
-			<div class="flex gap-4">
-				<Carousel.Root class="w-full max-w-xs">
+			<div class="flex gap-4 justify-center items-center">
+				<Carousel.Root class="w-full max-w-4xl h-fit p-4">
 					<Carousel.Content>
 						{#each episode.case?.case_card_list || [] as caseCard}
 							<Carousel.Item>
-								<div class="p-1">
-									<Card.Root>
-										<Card.Content class="flex aspect-square items-center justify-center p-6">
-											<div class="flex flex-col gap-2">
-												<div class="flex gap-2">
-													<p>Location:</p>
-													<p class="text-[#737373]">{caseCard.location}</p>
+								<div class="p-4">
+									<Card.Root class="border border-gray-200 rounded-lg overflow-hidden">
+										<Card.Header class="text-center instrument-serif-regular text-3xl">
+											<Card.Title class="">{caseCard.crime_type}</Card.Title>
+										</Card.Header>
+										<Card.Content class="p-4 flex">
+											<div class="flex-1 relative rounded-lg overflow-hidden">
+												<img
+													src={caseCard.case_image_url || 'https://github.com/shadcn.png'}
+													alt={caseCard.crime_type}
+													class="w-full aspect-square object-cover"
+												/>
+											</div>
+											<div class="flex-1 p-4 space-y-3">
+												<div class="space-y-2">
+													<div class="flex gap-2">
+														<span class="font-semibold text-base">Location:</span>
+														<span class="text-[#737373] text-base">{caseCard.location}</span>
+													</div>
+													<div class="flex gap-2">
+														<span class="font-semibold text-base">Victim:</span>
+														<span class="text-[#737373] text-base">{caseCard.victims_name}</span>
+													</div>
+													<div class="flex gap-2">
+														<span class="font-semibold text-base">Cause of death:</span>
+														<span class="text-[#737373] text-base">{caseCard.cause_of_death}</span>
+													</div>
+													{#if caseCard.suspects_name}
+														<div class="flex gap-2">
+															<span class="font-semibold text-base">Suspects:</span>
+															<span class="text-[#737373] text-base">{caseCard.suspects_name}</span>
+														</div>
+													{/if}
 												</div>
-												<div class="flex gap-2">
-													<p>Victim:</p>
-													<p class="text-[#737373]">{caseCard.victims_name}</p>
-												</div>
-												<div class="flex gap-2">
-													<p>Cause of death:</p>
-													<p class="text-[#737373]">{caseCard.cause_of_death}</p>
-												</div>
-												<div class="flex gap-2">
-													<p>Crime Type:</p>
-													<p class="text-[#737373]">{caseCard.crime_type}</p>
-												</div>
-												<p class="text-[#737373]">
+												<p class="text-[#737373] text-base leading-relaxed line-clamp-4">
 													{caseCard.crime_description}
 												</p>
 											</div>
@@ -231,7 +235,11 @@
 				<div class="flex flex-wrap gap-4">
 					{#each episode.side_characters || [] as person}
 						<Card.Root
-							class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200"
+							class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300 hover:border-blue-300"
+							onclick={() => {
+								// Mock navigation to character detail page
+								window.location.href = `/character/${encodeURIComponent(person.name_eng.toLowerCase().replace(/\s+/g, '-'))}`;
+							}}
 						>
 							<Card.Header
 								class="w-full h-auto instrument-serif-regular text-[28px] tracking-[-0.02em] text-center"
@@ -261,21 +269,72 @@
 
 			<!-- Resolution -->
 			<div
-				class="w-[1280px] h-auto self-center opacity-100 flex flex-col items-center justify-center gap-6 p-12 rounded-[20px] bg-[#325FEC]"
+				class="w-[1280px] h-fit self-center opacity-100 flex flex-col items-center justify-center gap-6 p-12 rounded-[20px] bg-[#325FEC]"
 			>
 				<h1 class="text-white">Resolution</h1>
-				<div class="w-[600px] h-auto text-white flex justify-center">
-					<Accordion.Root type="single" class="w-full sm:max-w-[70%] text-white" value="item-1">
-						<Accordion.Item value="item-1">
-							<Accordion.Trigger>Resolution</Accordion.Trigger>
-							<Accordion.Content class="flex flex-col gap-4 text-balance">
-								<div class="max-h-96 overflow-y-auto">
-									{@html episode.resolution || 'Resolution details not available.'}
-								</div>
-							</Accordion.Content>
-						</Accordion.Item>
+				<div class="w-full h-auto text-white flex justify-center">
+					<Accordion.Root type="single" class="w-full sm:max-w-[70%] text-white">
+						{#if episode.resolution && Array.isArray(episode.resolution)}
+							{#each episode.resolution as resolutionCase, index}
+								{#if resolutionCase.Description}
+									<!-- Single case with description only -->
+									<Accordion.Item value="case-{index}">
+										<Accordion.Trigger>Case {index + 1} Resolution</Accordion.Trigger>
+										<Accordion.Content class="flex flex-col gap-4 text-balance">
+											<div class="max-h-96 overflow-y-auto">
+												{@html resolutionCase.Description}
+											</div>
+										</Accordion.Content>
+									</Accordion.Item>
+								{:else}
+									<!-- Case with split sections -->
+									{#if resolutionCase.Evidence && resolutionCase.Evidence.length > 0}
+										<Accordion.Item value="evidence-{index}">
+											<Accordion.Trigger>Case {index + 1} - Evidence</Accordion.Trigger>
+											<Accordion.Content class="flex flex-col gap-4 text-balance">
+												<div class="max-h-96 overflow-y-auto space-y-3">
+													{#each resolutionCase.Evidence as evidenceItem}
+														<p class="text-sm leading-relaxed">{evidenceItem}</p>
+													{/each}
+												</div>
+											</Accordion.Content>
+										</Accordion.Item>
+									{/if}
+									{#if resolutionCase.Conclusion}
+										<Accordion.Item value="conclusion-{index}">
+											<Accordion.Trigger>Case {index + 1} - Conclusion</Accordion.Trigger>
+											<Accordion.Content class="flex flex-col gap-4 text-balance">
+												<div class="max-h-96 overflow-y-auto">
+													{@html resolutionCase.Conclusion}
+												</div>
+											</Accordion.Content>
+										</Accordion.Item>
+									{/if}
+									{#if resolutionCase.Motive}
+										<Accordion.Item value="motive-{index}">
+											<Accordion.Trigger>Case {index + 1} - Motive</Accordion.Trigger>
+											<Accordion.Content class="flex flex-col gap-4 text-balance">
+												<div class="max-h-96 overflow-y-auto">
+													{@html resolutionCase.Motive}
+												</div>
+											</Accordion.Content>
+										</Accordion.Item>
+									{/if}
+								{/if}
+							{/each}
+						{:else}
+							<!-- Fallback for old format or missing data -->
+							<Accordion.Item value="resolution">
+								<Accordion.Trigger>Resolution</Accordion.Trigger>
+								<Accordion.Content class="flex flex-col gap-4 text-balance">
+									<div class="max-h-96 overflow-y-auto">
+										{@html episode.resolution || 'Resolution details not available.'}
+									</div>
+								</Accordion.Content>
+							</Accordion.Item>
+						{/if}
 						{#if episode.gadgets && episode.gadgets.length > 0}
-							<Accordion.Item value="item-2">
+							<Accordion.Item value="gadgets">
 								<Accordion.Trigger>Gadgets Used</Accordion.Trigger>
 								<Accordion.Content class="flex flex-col gap-4 text-balance">
 									<ul class="list-disc list-inside">
@@ -294,38 +353,71 @@
 
 	<!-- BGM list -->
 	<div
-		class="w-full h-fit opacity-100 bg-[linear-gradient(72.44deg,_#FFFFFF_56.67%,_#EBE7FF_102.5%)] flex flex-col p-20 gap-7"
+		class="w-full h-fit opacity-100 bg-[linear-gradient(72.44deg,_#FFFFFF_56.67%,_#EBE7FF_102.5%)] flex flex-col sm:p-4 md:p-8 lg:p-12 xl:p-20 gap-7"
 	>
-		<h1>BGM listing</h1>
-		<div class="h-auto bg-white">
-			<Table.Root>
-				<Table.Header>
-					<Table.Row>
-						<Table.Head class="w-[200px]">Song Title</Table.Head>
-						<Table.Head>Romaji</Table.Head>
-						<Table.Head>Translation</Table.Head>
-						<Table.Head class="text-right">OST</Table.Head>
-					</Table.Row>
-				</Table.Header>
-				<Table.Body>
-					{#each episode.bgm_list || [] as bgm}
+		<h1 class="px-4 sm:px-0">BGM listing</h1>
+		<div class="h-auto bg-white rounded-lg shadow-sm overflow-hidden">
+			<!-- Desktop Table View -->
+			<div class="hidden md:block overflow-x-auto">
+				<Table.Root>
+					<Table.Header>
 						<Table.Row>
-							<Table.Cell class="font-medium">{bgm['Song Title']}</Table.Cell>
-							<Table.Cell>{bgm.Romaji}</Table.Cell>
-							<Table.Cell>{bgm.Translation}</Table.Cell>
-							<Table.Cell class="text-right">
+							<Table.Head class="w-[200px] min-w-[150px]">Song Title</Table.Head>
+							<Table.Head class="min-w-[150px]">Romaji</Table.Head>
+							<Table.Head class="min-w-[150px]">Translation</Table.Head>
+							<Table.Head class="text-right min-w-[120px]">OST</Table.Head>
+						</Table.Row>
+					</Table.Header>
+					<Table.Body>
+						{#each episode.bgm_list || [] as bgm}
+							<Table.Row>
+								<Table.Cell class="font-medium">{bgm['Song Title']}</Table.Cell>
+								<Table.Cell class="text-gray-600">{bgm.Romaji}</Table.Cell>
+								<Table.Cell class="text-gray-600">{bgm.Translation}</Table.Cell>
+								<Table.Cell class="text-right">
+									<a
+										href={`/ost/${encodeURIComponent(bgm.OST_name.toLowerCase().replace(/\s+/g, '-'))}`}
+										class="text-blue-600 hover:text-blue-800 underline text-sm cursor-pointer hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-200"
+									>
+										{bgm.OST_name}
+									</a>
+								</Table.Cell>
+							</Table.Row>
+						{/each}
+					</Table.Body>
+				</Table.Root>
+			</div>
+
+			<!-- Mobile Card View -->
+			<div class="md:hidden space-y-4 p-4">
+				{#each episode.bgm_list || [] as bgm}
+					<div class="bg-gray-50 rounded-lg p-4 space-y-3">
+						<div class="font-medium text-lg">{bgm['Song Title']}</div>
+						<div class="space-y-2">
+							<div class="flex flex-col">
+								<span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Romaji</span
+								>
+								<span class="text-gray-700">{bgm.Romaji}</span>
+							</div>
+							<div class="flex flex-col">
+								<span class="text-xs font-medium text-gray-500 uppercase tracking-wide"
+									>Translation</span
+								>
+								<span class="text-gray-700">{bgm.Translation}</span>
+							</div>
+							<div class="flex flex-col">
+								<span class="text-xs font-medium text-gray-500 uppercase tracking-wide">OST</span>
 								<a
-									href={bgm.OST_url}
-									target="_blank"
-									class="text-blue-600 hover:text-blue-800 underline"
+									href={`/ost/${encodeURIComponent(bgm.OST_name.toLowerCase().replace(/\s+/g, '-'))}`}
+									class="text-blue-600 hover:text-blue-800 underline text-sm w-fit cursor-pointer hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-200"
 								>
 									{bgm.OST_name}
 								</a>
-							</Table.Cell>
-						</Table.Row>
-					{/each}
-				</Table.Body>
-			</Table.Root>
+							</div>
+						</div>
+					</div>
+				{/each}
+			</div>
 		</div>
 	</div>
 {/if}

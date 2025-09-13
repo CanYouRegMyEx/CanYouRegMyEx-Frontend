@@ -306,7 +306,7 @@
 	});
 </script>
 
-<div class="w-full h-screen flex flex-col">
+<div class="w-full h-fit flex flex-col">
 	<!-- Navbar -->
 	<div class="bg-white w-full h-fit max-h-[100px] flex justify-between items-center px-10 py-1">
 		<div class="flex items-center gap-4">
@@ -353,7 +353,7 @@
 </div>
 
 <!-- Episode List -->
-<div class="w-full h-fit flex flex-col gap-10 p-32">
+<div class="w-full h-fit flex flex-col gap-10 p-24">
 	<h1>All Episodes</h1>
 
 	<!-- Tools bar -->
