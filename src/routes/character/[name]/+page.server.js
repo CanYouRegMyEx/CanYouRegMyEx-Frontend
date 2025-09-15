@@ -49,24 +49,14 @@ export async function load({ params }) {
 				dramaActors: apiData.profile?.actors?.drama_actors || []
 			},
 			
-			// Content sections
+			// Content sections - preserve sub-section keys from the API so the UI can render them dynamically
 			summary: apiData.summary || [],
-			background: {
-				generic: apiData.background?.generic || [],
-				conanEdogawa: apiData.background?.['Conan Edogawa'] || []
-			},
-			appearance: apiData.appearance?.generic || [],
-			personality: apiData.personality?.generic || [],
+			background: apiData.background || {},
+			appearance: apiData.appearance || {},
+			personality: apiData.personality || {},
 			
-			// Skills sections
-			skills: {
-				generic: apiData.skills?.generic || [],
-				intelligence: apiData.skills?.Intelligence || [],
-				language: apiData.skills?.Language || [],
-				athletic: apiData.skills?.['Athletic ability'] || [],
-				music: apiData.skills?.Music || [],
-				other: apiData.skills?.['Other skills'] || []
-			},
+			// Skills - pass through raw skills object so we can iterate its keys in the UI
+			skills: apiData.skills || {},
 			
 			// Gallery images
 			galleryImages: (apiData.image_urls || []).map(url => fixImageUrl(url)).filter(Boolean)
