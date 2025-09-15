@@ -10,14 +10,8 @@ export async function load({ params }) {
 		// Map song name to Detective Conan World URL
 		const songUrl = mapSongNameToUrl(songName);
 		
-		console.log(`Loading song: ${songName}`);
-		console.log(`Formatted song name: ${formatSongName(songName)}`);
-		console.log(`Using Detective Conan World URL: ${songUrl}`);
-		
 		// Fetch data from Backend API
 		const apiData = await fetchSongData(songUrl);
-		
-		console.log('API Response:', apiData);
 		
 		// Helper function to fix image URLs from API
 		const fixImageUrl = (url) => {
@@ -134,7 +128,6 @@ export async function load({ params }) {
 		};
 
 	} catch (err) {
-		console.error('Error fetching song data:', err);
 		
 		// Fallback to mock data if API fails
 		try {
@@ -146,7 +139,6 @@ export async function load({ params }) {
 				songName: params.name
 			};
 		} catch (mockError) {
-			console.error('Error loading mock data:', mockError);
 			throw error(500, {
 				message: 'Failed to load song data',
 				details: err.message

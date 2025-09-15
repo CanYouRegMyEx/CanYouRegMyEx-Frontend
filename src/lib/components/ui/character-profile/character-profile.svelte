@@ -7,11 +7,6 @@
 		class: className,
 		...restProps
 	} = $props();
-
-	// Add debug logging
-	console.log('Profile data received:', profile);
-	console.log('Actors data received:', actors);
-	console.log('About to create derived values...');
 	
 	// Add fallback data for testing
 	const fallbackProfile = {
@@ -48,7 +43,6 @@
 	
 	$effect(() => {
 		const profileSource = profile || fallbackProfile;
-		console.log('Processing profile source:', profileSource);
 		
 		if (!profileSource) {
 			profileData = [];
@@ -98,7 +92,6 @@
 			data.push({ label: 'Aliases:', value: profileSource.aliases.join(', ') });
 		}
 		
-		console.log('Final profile data:', data);
 		profileData = data;
 	});
 
@@ -107,7 +100,6 @@
 	
 	$effect(() => {
 		const actorsSource = actors || fallbackActors;
-		console.log('Processing actors source:', actorsSource);
 		
 		if (!actorsSource) {
 			actorsData = [];
@@ -154,7 +146,6 @@
 			});
 		}
 		
-		console.log('Final actors data:', data);
 		actorsData = data;
 	});
 </script>

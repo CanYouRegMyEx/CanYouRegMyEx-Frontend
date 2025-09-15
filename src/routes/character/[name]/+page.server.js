@@ -10,16 +10,8 @@ export async function load({ params }) {
 		// Map character name to Detective Conan World URL
 		const characterUrl = mapCharacterNameToUrl(characterName);
 		
-		console.log(`Loading character: ${characterName}`);
-		console.log(`Formatted character name: ${formatCharacterName(characterName)}`);
-		console.log(`Using Detective Conan World URL: ${characterUrl}`);
-		
 		// Fetch data from Backend API
 		const apiData = await fetchCharacterData(characterUrl);
-		
-		console.log('Character API Response:', apiData);
-		console.log('Profile from API:', apiData.profile);
-		console.log('Actors from API:', apiData.profile?.actors);
 		
 		// Helper function to fix image URLs from API
 		const fixImageUrl = (url) => {
@@ -46,15 +38,6 @@ export async function load({ params }) {
 				heights: apiData.profile?.heights || [],
 				weights: apiData.profile?.weights || [],
 				birthday: apiData.profile?.birthday || 'Unknown',
-				// Extract additional profile data that might be missing from API structure
-				relatives: apiData.profile?.relatives || [
-					'Yusaku Kudo (father)',
-					'Yukiko Kudo (mother)', 
-					'Ran Mouri (girlfriend)',
-					'Heiji Hattori (best friend)',
-					'Chikage Kuroba (aunt)',
-					'Kaito Kuroba (cousin)'
-				],
 				occupations: apiData.profile?.occupations || [],
 				statuses: apiData.profile?.statuses || [],
 				nicknames: apiData.profile?.nicknames || [
@@ -68,8 +51,7 @@ export async function load({ params }) {
 					'Dog guy (Vermouth)',
 					'The Heisei Holmes',
 					'Great Detective (Genta Kojima)'
-				],
-				aliases: apiData.profile?.aliases || ['Conan Edogawa']
+				]
 			},
 			
 			// Voice actors and actors
@@ -110,7 +92,6 @@ export async function load({ params }) {
 		};
 
 	} catch (err) {
-		console.error('Error fetching character data:', err);
 		
 		// Return error info for user feedback
 		throw error(500, {
