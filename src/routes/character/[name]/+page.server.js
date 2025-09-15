@@ -40,18 +40,6 @@ export async function load({ params }) {
 				birthday: apiData.profile?.birthday || 'Unknown',
 				occupations: apiData.profile?.occupations || [],
 				statuses: apiData.profile?.statuses || [],
-				nicknames: apiData.profile?.nicknames || [
-					'Detective Geek',
-					'The Holmes of the East', 
-					'The Savior of the police force',
-					'Shin-chan (his mother)',
-					'Silver Bullet (Vermouth)',
-					'The Cool Guy (Vermouth)',
-					'Cool guy (Vermouth)',
-					'Dog guy (Vermouth)',
-					'The Heisei Holmes',
-					'Great Detective (Genta Kojima)'
-				]
 			},
 			
 			// Voice actors and actors
