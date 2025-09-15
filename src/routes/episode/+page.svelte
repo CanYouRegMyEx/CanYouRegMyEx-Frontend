@@ -232,7 +232,7 @@
 
 				<div class="flex flex-wrap gap-4">
 					{#each episode.side_characters || [] as person}
-						<a href="/character/{encodeURIComponent(person.name_eng || 'Unknown')}" class="no-underline">
+						<div class="no-underline">
 							<Card.Root
 								class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300 hover:border-blue-300"
 							>
@@ -258,7 +258,7 @@
 								{/each}
 							</Card.Footer>
 						</Card.Root>
-						</a>
+						</div>
 					{/each}
 				</div>
 			</div>
