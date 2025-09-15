@@ -2,7 +2,6 @@ import { PUBLIC_API_BASE_URL, PUBLIC_DEFAULT_SONG_URL } from '$env/static/public
 
 // Get API base URL from environment
 export const API_BASE_URL = PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
-export const DEFAULT_SONG_URL = PUBLIC_DEFAULT_SONG_URL;
 
 /**
  * Create full API URL with query parameters
