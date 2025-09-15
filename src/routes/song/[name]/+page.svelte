@@ -1,9 +1,14 @@
 <script>
+	import { afterNavigate } from '$app/navigation';
+	afterNavigate(() => {
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	});
 	import CastMember from '$lib/components/ui/cast-member';
 	import LyricsToggle from '$lib/components/ui/lyrics-toggle';
 	import FlipCard from '$lib/components/ui/flip-card';
 	import TrackTable from '$lib/components/ui/track-table';
-	import { Music, Users, MessageCircle, FileText, Disc, Wifi, WifiOff, AlertCircle } from '@lucide/svelte';
+	import { Music, Users, MessageCircle, FileText, Disc, Wifi, WifiOff, AlertCircle, ArrowLeft } from '@lucide/svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 
 	/** @type {import('./$types').PageData} */
 	let { data } = $props();
@@ -50,6 +55,16 @@
 
 {#if songData}
 <div class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900">
+	<div class="absolute top-4 left-4">
+		<Button
+			onclick={() => window.history.back()}
+			variant="outline"
+			class="flex items-center gap-2"
+		>
+			<ArrowLeft class="w-4 h-4" />
+			Back to Episode
+		</Button>
+	</div>
 	
 	<!-- Header Section - Full Screen -->
 	<section class="min-h-screen flex items-center justify-center">

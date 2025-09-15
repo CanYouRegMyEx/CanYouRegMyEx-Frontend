@@ -48,7 +48,6 @@ export async function fetchFromApi(endpoint, params = {}, options = {}) {
 
 		return await response.json();
 	} catch (error) {
-		console.error(`API request failed for ${endpoint}:`, error);
 		throw error;
 	}
 }
