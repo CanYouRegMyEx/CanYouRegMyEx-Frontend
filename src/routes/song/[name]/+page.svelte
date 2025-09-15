@@ -21,9 +21,6 @@
 	// Check if data is from API or mock
 	const isFromApi = !apiError;
 	
-	// Debug: log the song data to see what we're getting
-	console.log('Song data:', songData);
-	console.log('Cast data:', songData?.cast);
 	// Debug: Check cast images specifically
 	songData?.cast?.forEach((member, index) => {
 		console.log(`Cast ${index + 1} - ${member.name}:`, member.image);

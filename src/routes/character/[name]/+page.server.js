@@ -10,16 +10,8 @@ export async function load({ params }) {
 		// Map character name to Detective Conan World URL
 		const characterUrl = mapCharacterNameToUrl(characterName);
 		
-		console.log(`Loading character: ${characterName}`);
-		console.log(`Formatted character name: ${formatCharacterName(characterName)}`);
-		console.log(`Using Detective Conan World URL: ${characterUrl}`);
-		
 		// Fetch data from Backend API
 		const apiData = await fetchCharacterData(characterUrl);
-		
-		console.log('Character API Response:', apiData);
-		console.log('Profile from API:', apiData.profile);
-		console.log('Actors from API:', apiData.profile?.actors);
 		
 		// Helper function to fix image URLs from API
 		const fixImageUrl = (url) => {
