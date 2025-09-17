@@ -192,22 +192,34 @@
 											</div>
 											<div class="flex-1 p-4 space-y-3">
 												<div class="space-y-2">
+													{#if caseCard.location}
 													<div class="flex gap-2">
 														<span class="font-semibold text-base">Location:</span>
 														<span class="text-[#737373] text-base">{caseCard.location}</span>
 													</div>
+													{/if}
+													{#if caseCard.victims_name}
 													<div class="flex gap-2">
 														<span class="font-semibold text-base">Victim:</span>
 														<span class="text-[#737373] text-base">{caseCard.victims_name}</span>
 													</div>
+													{/if}
+													{#if caseCard.cause_of_death}
 													<div class="flex gap-2">
 														<span class="font-semibold text-base">Cause of death:</span>
 														<span class="text-[#737373] text-base">{caseCard.cause_of_death}</span>
 													</div>
+													{/if}
 													{#if caseCard.suspects_name}
 														<div class="flex gap-2">
 															<span class="font-semibold text-base">Suspects:</span>
 															<span class="text-[#737373] text-base">{caseCard.suspects_name}</span>
+														</div>
+													{/if}
+													{#if caseCard.culprit}
+														<div class="flex gap-2">
+															<span class="font-semibold text-base">Culprit:</span>
+															<span class="text-[#737373] text-base">{caseCard.culprit}</span>
 														</div>
 													{/if}
 												</div>
