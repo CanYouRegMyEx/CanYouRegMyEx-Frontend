@@ -9,6 +9,8 @@
 	import bigConan from '$lib/assets/Bigconan.png';
 	import { onMount } from 'svelte';
 
+	const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+
 	let showStatusBar = $state(true);
 	let showActivityBar = $state(false);
 	let showPanel = $state(false);
@@ -29,7 +31,10 @@
 		fbi: '👮‍♂️',
 		mk: '🎩',
 		past: '🕰️',
-		db: '🕵️‍♂️'
+		hh: '🧢',
+		db: '🕵️‍♂️',
+		dc: '👓',
+		mko: '💎'
 	};
 
 	let limit = 25;
@@ -42,94 +47,61 @@
 
 	async function fetchAvailableSeasons() {
 		try {
-			const allSeasons = new Set();
-			let offset = 0;
-			const limit = 100;
-			let hasMoreData = true;
-			let batchCount = 0;
-
-			while (hasMoreData && batchCount < 50) {
-				const response = await fetch(
-					`http://127.0.0.1:8000/episodes/?limit=${limit}&offset=${offset}`
-				);
-
-				if (response.ok) {
-					const data = await response.json();
-					data.forEach((episode) => allSeasons.add(episode.season));
-
-					if (data.length < limit) {
-						hasMoreData = false;
-					} else {
-						offset += limit;
-					}
-					batchCount++;
-				} else {
-					hasMoreData = false;
-				}
+			const response = await fetch(`${BASE_URL}/episodes/metadata/seasons`);
+			if (response.ok) {
+				const data = await response.json();
+				availableSeasons = data.sort((a, b) => a - b);
+			} else {
+				throw new Error('Failed to fetch seasons');
 			}
-
-			availableSeasons = Array.from(allSeasons).sort((a, b) => a - b);
 		} catch (e) {
+			console.error('Error fetching seasons:', e);
+			// Fallback to default seasons
 			availableSeasons = Array.from({ length: 30 }, (_, i) => i + 1);
 		}
 	}
 
 	async function fetchAvailablePlots() {
 		try {
-			const allPlots = new Set();
-			let offset = 0;
-			const limit = 100;
-			let hasMoreData = true;
-			let batchCount = 0;
+			const response = await fetch(`${BASE_URL}/episodes/metadata/plots`);
+			if (response.ok) {
+				const data = await response.json();
 
-			while (hasMoreData && batchCount < 50) {
-				const response = await fetch(
-					`http://127.0.0.1:8000/episodes/?limit=${limit}&offset=${offset}`
-				);
+				const plotNames = {
+					new: 'New Character',
+					char: 'Character Development',
+					romance: 'Romance',
+					bo: 'Black Organization',
+					fbi: 'FBI',
+					mk: 'Magic Kaito',
+					past: 'Character Past',
+					hh: 'Heiji Hattori',
+					db: 'Detective Boys',
+					dc: 'Detective Conan',
+					mko: 'Magic Kaito Organization'
+				};
 
-				if (response.ok) {
-					const data = await response.json();
+				// Add missing emojis for new plot types
+				const updatedPlotEmojiMap = {
+					...plotEmojiMap,
+					hh: '🧢',
+					dc: '👓',
+					mko: '💎'
+				};
 
-					data.forEach((episode) => {
-						if (episode.plots && Array.isArray(episode.plots)) {
-							episode.plots.forEach((plot) => {
-								allPlots.add(plot);
-							});
-						}
-					});
-
-					if (data.length < limit) {
-						hasMoreData = false;
-					} else {
-						offset += limit;
-					}
-					batchCount++;
-				} else {
-					hasMoreData = false;
-				}
-			}
-
-			const plotNames = {
-				new: 'New Character',
-				char: 'Character Development',
-				romance: 'Romance',
-				bo: 'Black Organization',
-				fbi: 'FBI',
-				mk: 'Magic Kaito',
-				past: 'Character Past',
-				db: 'Detective Boys'
-			};
-
-			const plots = Array.from(allPlots)
-				.sort()
-				.map((plot) => ({
+				const plots = data.sort().map((plot) => ({
 					value: plot,
-					label: `${plotEmojiMap[plot] || '📺'} ${plotNames[plot] || plot.charAt(0).toUpperCase() + plot.slice(1)}`,
-					emoji: plotEmojiMap[plot] || '📺'
+					label: `${updatedPlotEmojiMap[plot] || '📺'} ${plotNames[plot] || plot.charAt(0).toUpperCase() + plot.slice(1)}`,
+					emoji: updatedPlotEmojiMap[plot] || '📺'
 				}));
 
-			availablePlots = plots;
+				availablePlots = plots;
+			} else {
+				throw new Error('Failed to fetch plots');
+			}
 		} catch (e) {
+			console.error('Error fetching plots:', e);
+			// Fallback to default plots
 			availablePlots = [
 				{ value: 'new', label: '✨ New Character', emoji: '✨' },
 				{ value: 'char', label: '📈 Character Development', emoji: '📈' },
@@ -138,7 +110,10 @@
 				{ value: 'fbi', label: '👮‍♂️ FBI', emoji: '👮‍♂️' },
 				{ value: 'mk', label: '🎩 Magic Kaito', emoji: '🎩' },
 				{ value: 'past', label: '🕰️ Character Past', emoji: '🕰️' },
-				{ value: 'db', label: '🕵️‍♂️ Detective Boys', emoji: '🕵️‍♂️' }
+				{ value: 'hh', label: '🧢 Heiji Hattori', emoji: '🧢' },
+				{ value: 'db', label: '🕵️‍♂️ Detective Boys', emoji: '🕵️‍♂️' },
+				{ value: 'dc', label: '👓 Detective Conan', emoji: '👓' },
+				{ value: 'mko', label: '💎 Magic Kaito Organization', emoji: '💎' }
 			];
 		}
 	}
@@ -172,7 +147,7 @@
 
 		params.append('offset', offset);
 
-		const finalUrl = `http://127.0.0.1:8000/episodes/?${params.toString()}`;
+		const finalUrl = `${BASE_URL}/episodes/?${params.toString()}`;
 
 		try {
 			const res = await fetch(finalUrl);
@@ -222,7 +197,7 @@
 				params.append('limit', 100);
 				params.append('offset', searchOffset);
 
-				const searchUrl = `http://127.0.0.1:8000/episodes/?${params.toString()}`;
+				const searchUrl = `${BASE_URL}/episodes/?${params.toString()}`;
 
 				const res = await fetch(searchUrl);
 				if (res.ok) {
@@ -382,7 +357,10 @@
 		<!-- Season Filter Dropdown -->
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger>
-				<Button variant="outline" class="min-w-[180px] justify-between">
+				<Button
+					variant="outline"
+					class="min-w-[180px] justify-between border border-[#CECECE] p-2 rounded-[10px] shadow-xs"
+				>
 					{selectedSeasons.length === 0
 						? 'Select Seasons'
 						: selectedSeasons.length === 1
@@ -412,7 +390,10 @@
 		<!-- Plot Filter Dropdown -->
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger>
-				<Button variant="outline" class="min-w-[180px] justify-between">
+				<Button
+					variant="outline"
+					class="min-w-[180px] justify-between border border-[#CECECE] p-2 rounded-[10px] shadow-xs"
+				>
 					{selectedPlots.length === 0
 						? 'Select Plots'
 						: selectedPlots.length === 1
@@ -438,7 +419,9 @@
 				{/each}
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
-		<Button class="bg-[#325FEC] text-white" onclick={seeAllResults}>See all result</Button>
+		<Button class="bg-[#325FEC] text-white p-2 rounded-[10px]" onclick={seeAllResults}
+			>See all result</Button
+		>
 	</div>
 
 	<!-- Table -->
@@ -506,17 +489,39 @@
 
 		<!-- Pagination Controls -->
 		{#if episodes.length > 0}
-			<div class="flex justify-center items-center gap-2">
+			<div class="flex justify-center items-center gap-4">
 				<!-- Previous Page -->
-				<Button variant="outline" size="sm" onclick={prevPage} disabled={!hasPrev}>Previous</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={prevPage}
+					disabled={!hasPrev}
+					class={!hasPrev
+						? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400 border border-gray-300 px-3 py-1 rounded-lg'
+						: 'bg-white text-gray-700 border border-gray-300 px-3 py-1 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200'}
+				>
+					Previous
+				</Button>
 
 				<!-- Current Page Info -->
-				<div class="px-4 py-2 text-sm bg-gray-100 rounded">
+				<div
+					class="px-3 py-2 text-sm bg-blue-100 border border-blue-300 rounded-lg font-medium text-blue-800"
+				>
 					Page {currentPage}
 				</div>
 
 				<!-- Next Page -->
-				<Button variant="outline" size="sm" onclick={nextPage} disabled={!hasNext}>Next</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={nextPage}
+					disabled={!hasNext}
+					class={!hasNext
+						? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400 border border-gray-300 px-3 py-1 rounded-lg'
+						: 'bg-white text-gray-700 border border-gray-300 px-3 py-1 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200'}
+				>
+					Next
+				</Button>
 			</div>
 
 			<!-- Page Size Selector -->
