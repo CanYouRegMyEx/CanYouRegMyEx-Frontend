@@ -1,50 +1,49 @@
 <script>
-	import { afterNavigate } from '$app/navigation';
-	afterNavigate(() => {
-		window.scrollTo({ top: 0, behavior: 'smooth' });
-	});
-	import CastMember from '$lib/components/ui/cast-member';
-	import LyricsToggle from '$lib/components/ui/lyrics-toggle';
-	import FlipCard from '$lib/components/ui/flip-card';
-	import TrackTable from '$lib/components/ui/track-table';
-	import { Music, Users, MessageCircle, FileText, Disc, Wifi, WifiOff, AlertCircle, ArrowLeft } from '@lucide/svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
+import { onMount } from 'svelte';
+import { afterNavigate } from '$app/navigation';
+import { page } from '$app/stores';
+afterNavigate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+import CastMember from '$lib/components/ui/cast-member';
+import LyricsToggle from '$lib/components/ui/lyrics-toggle';
+import FlipCard from '$lib/components/ui/flip-card';
+import TrackTable from '$lib/components/ui/track-table';
+import { Music, Users, MessageCircle, FileText, Disc, Wifi, WifiOff, AlertCircle, ArrowLeft } from '@lucide/svelte';
+import { Button } from '$lib/components/ui/button/index.js';
 
-	/** @type {import('./$types').PageData} */
-	let { data } = $props();
+// client-side state
+let songData = $state(null);
+let loading = $state(true);
+let error = $state(null);
 
-	// Get data from server load
-	const songData = data.songData;
-	const apiBaseUrl = data.apiBaseUrl;
-	const apiError = data.apiError;
-	
-	// Check if data is from API or mock
-	const isFromApi = !apiError;
-	
-	// Debug: Check cast images specifically
-	songData?.cast?.forEach((member, index) => {
-		console.log(`Cast ${index + 1} - ${member.name}:`, member.image);
-	});
-	
-	// Helper functions to check if sections have data
-	const hasCast = $derived(songData?.cast && songData.cast.length > 0);
-	const hasOpeningSpeech = $derived(
-		songData?.openingSpeech && 
+// Reactive variables
+let showRomanji = $state(false);
+
+// Use server-provided data via $page store
+$effect(() => {
+	const d = $page.data;
+	if (d?.error) {
+		error = d.error;
+		songData = null;
+	} else {
+		songData = d?.songData ?? null;
+		error = null;
+	}
+	loading = false;
+});
+
+const hasCast = $derived(songData?.cast && songData.cast.length > 0);
+const hasOpeningSpeech = $derived(
+	songData?.openingSpeech &&
 		(songData.openingSpeech.japanese?.content || songData.openingSpeech.english?.content) &&
-		(songData.openingSpeech.japanese?.content !== "No Japanese speech available" || 
-		 songData.openingSpeech.english?.content !== "No English speech available")
-	);
-	const hasLyrics = $derived(
-		songData?.lyrics && songData.lyrics !== "No Japanese lyrics available" ||
-		songData?.lyricsRomanji && songData.lyricsRomanji !== "No Romanji lyrics available"
-	);
-	const hasTrackList = $derived(
-		(songData?.trackList && songData.trackList.length > 0) ||
-		(songData?.cdCollection && songData.cdCollection.length > 0)
-	);
-	
-	// Reactive variables
-	let showRomanji = $state(false);
+		(songData.openingSpeech.japanese?.content !== 'No Japanese speech available' || songData.openingSpeech.english?.content !== 'No English speech available')
+);
+const hasLyrics = $derived(
+	(songData?.lyrics && songData.lyrics !== 'No Japanese lyrics available') ||
+	(songData?.lyricsRomanji && songData.lyricsRomanji !== 'No Romanji lyrics available')
+);
+const hasTrackList = $derived(
+	(songData?.trackList && songData.trackList.length > 0) || (songData?.cdCollection && songData.cdCollection.length > 0)
+);
 </script>
 
 <svelte:head>

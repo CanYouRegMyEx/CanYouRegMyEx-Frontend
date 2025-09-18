@@ -1,64 +1,79 @@
 <script>
-	// Import character profile components
-	import { 
-		CharacterHero, 
-		CharacterProfile,
-		CharacterContent,
-		CharacterGallery,
-		CharacterLoading,
-		CharacterError
-	} from '$lib/components/ui/character-profile/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { ArrowLeft } from 'lucide-svelte';
+import { onMount } from 'svelte';
+import { page } from '$app/stores';
+// Import character profile components
+import {
+	CharacterHero,
+	CharacterProfile,
+	CharacterContent,
+	CharacterGallery,
+	CharacterLoading,
+	CharacterError
+} from '$lib/components/ui/character-profile/index.js';
+import { Button } from '$lib/components/ui/button/index.js';
+import { ArrowLeft } from 'lucide-svelte';
 
-	/** @type {import('./$types').PageData} */
-	let { data } = $props();
+// client-side state
+let characterData = $state(null);
+let loading = $state(true);
+let error = $state(null);
 
-	// Get data from server load
-	const characterData = data.characterData;
-	
-	// Collapse/expand states
-	let backgroundExpanded = $state(true);
-	let personalityExpanded = $state(true);
-	let appearanceExpanded = $state(true);
-	let skillsExpanded = $state(true);
-	
-	// Helper functions to check if sections have data
+// Environment
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+const BASE_CONAN_URL = import.meta.env.VITE_WIKI_BASE_URL || 'https://www.detectiveconanworld.com';
 
-	// Format raw keys to human friendly titles: camelCase, snake_case, or normal words -> Title Case
-	function formatKey(key) {
-		if (!key) return '';
-		// Insert space before capital letters and replace underscores/hyphens
-		const withSpaces = key.replace(/([A-Z])/g, ' $1').replace(/[_-]/g, ' ');
-		return withSpaces.split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ').trim();
+// Collapse/expand states
+let backgroundExpanded = $state(true);
+let personalityExpanded = $state(true);
+let appearanceExpanded = $state(true);
+let skillsExpanded = $state(true);
+
+// helpers
+function formatKey(key) {
+	if (!key) return '';
+	const withSpaces = key.replace(/([A-Z])/g, ' $1').replace(/[_-]/g, ' ');
+	return withSpaces
+		.split(' ')
+		.map(s => s.charAt(0).toUpperCase() + s.slice(1))
+		.join(' ')
+		.trim();
+}
+
+// Use server-provided data via $page store (runes mode).
+$effect(() => {
+	const d = $page.data;
+	if (d?.error) {
+		error = d.error;
+		characterData = null;
+	} else {
+		characterData = d?.characterData ?? null;
+		error = null;
 	}
+	loading = false;
+});
 
-	const hasProfile = $derived(characterData && characterData.profile && 
+const hasProfile = $derived(
+	characterData &&
+		characterData.profile &&
 		Object.keys(characterData.profile || {}).some(key => {
 			const value = characterData.profile[key];
-			return value && (
-				(Array.isArray(value) && value.length > 0) ||
-				(typeof value === 'string' && value !== 'Unknown' && value !== '')
+			return (
+				value &&
+				((Array.isArray(value) && value.length > 0) || (typeof value === 'string' && value !== 'Unknown' && value !== ''))
 			);
 		})
-	);
-	
-	const hasActors = $derived(characterData?.actors && 
-		(characterData.actors.voicesJapanese?.length > 0 || 
-		 characterData.actors.voicesEnglish?.length > 0 || 
-		 characterData.actors.dramaActors?.length > 0)
-	);
-	
-	// Determine presence of data for dynamic sections by checking any non-empty subarray/string in the object
-	const hasBackground = $derived(characterData?.background && Object.values(characterData.background).some(v => Array.isArray(v) ? v.length > 0 : Boolean(v)));
-	
-	const hasAppearance = $derived(characterData?.appearance && Object.values(characterData.appearance).some(v => Array.isArray(v) ? v.length > 0 : Boolean(v)));
-	
-	const hasPersonality = $derived(characterData?.personality && Object.values(characterData.personality).some(v => Array.isArray(v) ? v.length > 0 : Boolean(v)));
-	
-	const hasSkills = $derived(characterData?.skills && Object.values(characterData.skills).some(skill => Array.isArray(skill) ? skill.length > 0 : Boolean(skill)));
-	
-	const hasGallery = $derived(characterData?.galleryImages && characterData.galleryImages.length > 0);
+);
+
+const hasActors = $derived(
+	characterData?.actors &&
+		(characterData.actors.voicesJapanese?.length > 0 || characterData.actors.voicesEnglish?.length > 0 || characterData.actors.dramaActors?.length > 0)
+);
+
+const hasBackground = $derived(characterData?.background && Object.values(characterData.background).some(v => (Array.isArray(v) ? v.length > 0 : Boolean(v))));
+const hasAppearance = $derived(characterData?.appearance && Object.values(characterData.appearance).some(v => (Array.isArray(v) ? v.length > 0 : Boolean(v))));
+const hasPersonality = $derived(characterData?.personality && Object.values(characterData.personality).some(v => (Array.isArray(v) ? v.length > 0 : Boolean(v))));
+const hasSkills = $derived(characterData?.skills && Object.values(characterData.skills).some(skill => (Array.isArray(skill) ? skill.length > 0 : Boolean(skill))));
+const hasGallery = $derived(characterData?.galleryImages && characterData.galleryImages.length > 0);
 </script>
 
 <svelte:head>
@@ -78,11 +93,11 @@
 		</Button>
 	</div>
 
-	{#if data?.error}
+	{#if error}
 		<!-- Error State -->
 		<CharacterError 
 			title="Character Not Found"
-			message={data.error.message || "We couldn't find the character you're looking for. Please check the character name and try again."}
+			message={error.message || "We couldn't find the character you're looking for. Please check the character name and try again."}
 		/>
 	{:else if characterData}
 		<!-- Character Hero Section -->
