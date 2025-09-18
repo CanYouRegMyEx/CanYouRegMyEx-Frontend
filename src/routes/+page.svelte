@@ -31,7 +31,10 @@
 		fbi: '👮‍♂️',
 		mk: '🎩',
 		past: '🕰️',
-		db: '🕵️‍♂️'
+		hh: '🧢',
+		db: '🕵️‍♂️',
+		dc: '👓',
+		mko: '💎'
 	};
 
 	let limit = 25;
@@ -44,90 +47,61 @@
 
 	async function fetchAvailableSeasons() {
 		try {
-			const allSeasons = new Set();
-			let offset = 0;
-			const limit = 100;
-			let hasMoreData = true;
-			let batchCount = 0;
-
-			while (hasMoreData && batchCount < 50) {
-				const response = await fetch(`${BASE_URL}/episodes/?limit=${limit}&offset=${offset}`);
-
-				if (response.ok) {
-					const data = await response.json();
-					data.forEach((episode) => allSeasons.add(episode.season));
-
-					if (data.length < limit) {
-						hasMoreData = false;
-					} else {
-						offset += limit;
-					}
-					batchCount++;
-				} else {
-					hasMoreData = false;
-				}
+			const response = await fetch(`${BASE_URL}/episodes/metadata/seasons`);
+			if (response.ok) {
+				const data = await response.json();
+				availableSeasons = data.sort((a, b) => a - b);
+			} else {
+				throw new Error('Failed to fetch seasons');
 			}
-
-			availableSeasons = Array.from(allSeasons).sort((a, b) => a - b);
 		} catch (e) {
+			console.error('Error fetching seasons:', e);
+			// Fallback to default seasons
 			availableSeasons = Array.from({ length: 30 }, (_, i) => i + 1);
 		}
 	}
 
 	async function fetchAvailablePlots() {
 		try {
-			const allPlots = new Set();
-			let offset = 0;
-			const limit = 100;
-			let hasMoreData = true;
-			let batchCount = 0;
+			const response = await fetch(`${BASE_URL}/episodes/metadata/plots`);
+			if (response.ok) {
+				const data = await response.json();
 
-			while (hasMoreData && batchCount < 50) {
-				const response = await fetch(`${BASE_URL}/episodes/?limit=${limit}&offset=${offset}`);
+				const plotNames = {
+					new: 'New Character',
+					char: 'Character Development',
+					romance: 'Romance',
+					bo: 'Black Organization',
+					fbi: 'FBI',
+					mk: 'Magic Kaito',
+					past: 'Character Past',
+					hh: 'Heiji Hattori',
+					db: 'Detective Boys',
+					dc: 'Detective Conan',
+					mko: 'Magic Kaito Organization'
+				};
 
-				if (response.ok) {
-					const data = await response.json();
+				// Add missing emojis for new plot types
+				const updatedPlotEmojiMap = {
+					...plotEmojiMap,
+					hh: '🧢',
+					dc: '👓',
+					mko: '💎'
+				};
 
-					data.forEach((episode) => {
-						if (episode.plots && Array.isArray(episode.plots)) {
-							episode.plots.forEach((plot) => {
-								allPlots.add(plot);
-							});
-						}
-					});
-
-					if (data.length < limit) {
-						hasMoreData = false;
-					} else {
-						offset += limit;
-					}
-					batchCount++;
-				} else {
-					hasMoreData = false;
-				}
-			}
-
-			const plotNames = {
-				new: 'New Character',
-				char: 'Character Development',
-				romance: 'Romance',
-				bo: 'Black Organization',
-				fbi: 'FBI',
-				mk: 'Magic Kaito',
-				past: 'Character Past',
-				db: 'Detective Boys'
-			};
-
-			const plots = Array.from(allPlots)
-				.sort()
-				.map((plot) => ({
+				const plots = data.sort().map((plot) => ({
 					value: plot,
-					label: `${plotEmojiMap[plot] || '📺'} ${plotNames[plot] || plot.charAt(0).toUpperCase() + plot.slice(1)}`,
-					emoji: plotEmojiMap[plot] || '📺'
+					label: `${updatedPlotEmojiMap[plot] || '📺'} ${plotNames[plot] || plot.charAt(0).toUpperCase() + plot.slice(1)}`,
+					emoji: updatedPlotEmojiMap[plot] || '📺'
 				}));
 
-			availablePlots = plots;
+				availablePlots = plots;
+			} else {
+				throw new Error('Failed to fetch plots');
+			}
 		} catch (e) {
+			console.error('Error fetching plots:', e);
+			// Fallback to default plots
 			availablePlots = [
 				{ value: 'new', label: '✨ New Character', emoji: '✨' },
 				{ value: 'char', label: '📈 Character Development', emoji: '📈' },
@@ -136,7 +110,10 @@
 				{ value: 'fbi', label: '👮‍♂️ FBI', emoji: '👮‍♂️' },
 				{ value: 'mk', label: '🎩 Magic Kaito', emoji: '🎩' },
 				{ value: 'past', label: '🕰️ Character Past', emoji: '🕰️' },
-				{ value: 'db', label: '🕵️‍♂️ Detective Boys', emoji: '🕵️‍♂️' }
+				{ value: 'hh', label: '🧢 Heiji Hattori', emoji: '🧢' },
+				{ value: 'db', label: '🕵️‍♂️ Detective Boys', emoji: '🕵️‍♂️' },
+				{ value: 'dc', label: '👓 Detective Conan', emoji: '👓' },
+				{ value: 'mko', label: '💎 Magic Kaito Organization', emoji: '💎' }
 			];
 		}
 	}
