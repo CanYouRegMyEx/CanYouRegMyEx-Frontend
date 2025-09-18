@@ -36,3 +36,19 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+## Using Docker 🐋
+1. Build Docker image from `Dockerfile`
+```sh
+docker build -t canyouregmyex-frontend-image .
+```
+
+2. Run the image
+```sh
+docker run -d -p 3000:3000 --name <container-name> canyouregmyex-frontend-image
+```
+
+3. Verify that container is running
+```sh
+docker ps
+```
