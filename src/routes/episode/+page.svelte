@@ -10,6 +10,8 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 
+	const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+
 	let episode = $state(null);
 	let loading = $state(true);
 	let error = $state(null);
@@ -25,7 +27,7 @@
 		db: '🕵️‍♂️'
 	};
 
-	const BASE_URL = 'https://www.detectiveconanworld.com';
+	const BASE_CONAN_URL = 'https://www.detectiveconanworld.com';
 
 	function formatPlots(plots) {
 		if (!plots || plots.length === 0) return [];
@@ -48,11 +50,11 @@
 			}
 
 			// Construct the full episode URL
-			const fullEpisodeUrl = `${BASE_URL}${episodeLink}`;
+			const fullEpisodeUrl = `${BASE_CONAN_URL}${episodeLink}`;
 
 			// Use the new episode detail endpoint
 			const response = await fetch(
-				`http://127.0.0.1:8000/episode/?episode_url=${encodeURIComponent(fullEpisodeUrl)}`
+				`${BASE_URL}/episode/?episode_url=${encodeURIComponent(fullEpisodeUrl)}`
 			);
 
 			if (!response.ok) {
@@ -132,32 +134,32 @@
 		<!-- Card list -->
 		<div class="flex flex-wrap gap-4">
 			{#each episode.main_characters || [] as character}
-				<a href="{character.character_url}" class="no-underline">
+				<a href={character.character_url} class="no-underline">
 					<Card.Root
 						class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300 hover:border-blue-300"
 					>
-					<Card.Header
-						class="w-full h-auto instrument-serif-regular text-[28px] tracking-[-0.02em] text-center"
-					>
-						<Card.Title>{character.name_eng}</Card.Title>
-					</Card.Header>
-					<Card.Content
-						class="bg-gray-300 w-[100px] h-[100px] aspect-square flex justify-center items-center rounded-[100%] px-0 py-0"
-					>
-						<Avatar.Root class="w-full h-full">
-							<Avatar.Image
-								src={character.character_image_url || 'https://github.com/shadcn.png'}
-								alt={character.name_eng}
-							/>
-							<Avatar.Fallback>{character.name_eng.slice(0, 2).toUpperCase()}</Avatar.Fallback>
-						</Avatar.Root>
-					</Card.Content>
-					<Card.Footer class="w-auto h-auto flex flex-wrap justify-center items-center gap-2">
-						{#each character.character_info || [] as info}
-							<Badge variant="outline">{info}</Badge>
-						{/each}
-					</Card.Footer>
-				</Card.Root>
+						<Card.Header
+							class="w-full h-auto instrument-serif-regular text-[28px] tracking-[-0.02em] text-center"
+						>
+							<Card.Title>{character.name_eng}</Card.Title>
+						</Card.Header>
+						<Card.Content
+							class="bg-gray-300 w-[100px] h-[100px] aspect-square flex justify-center items-center rounded-[100%] px-0 py-0"
+						>
+							<Avatar.Root class="w-full h-full">
+								<Avatar.Image
+									src={character.character_image_url || 'https://github.com/shadcn.png'}
+									alt={character.name_eng}
+								/>
+								<Avatar.Fallback>{character.name_eng.slice(0, 2).toUpperCase()}</Avatar.Fallback>
+							</Avatar.Root>
+						</Card.Content>
+						<Card.Footer class="w-auto h-auto flex flex-wrap justify-center items-center gap-2">
+							{#each character.character_info || [] as info}
+								<Badge variant="outline">{info}</Badge>
+							{/each}
+						</Card.Footer>
+					</Card.Root>
 				</a>
 			{/each}
 		</div>
@@ -193,22 +195,23 @@
 											<div class="flex-1 p-4 space-y-3">
 												<div class="space-y-2">
 													{#if caseCard.location}
-													<div class="flex gap-2">
-														<span class="font-semibold text-base">Location:</span>
-														<span class="text-[#737373] text-base">{caseCard.location}</span>
-													</div>
+														<div class="flex gap-2">
+															<span class="font-semibold text-base">Location:</span>
+															<span class="text-[#737373] text-base">{caseCard.location}</span>
+														</div>
 													{/if}
 													{#if caseCard.victims_name}
-													<div class="flex gap-2">
-														<span class="font-semibold text-base">Victim:</span>
-														<span class="text-[#737373] text-base">{caseCard.victims_name}</span>
-													</div>
+														<div class="flex gap-2">
+															<span class="font-semibold text-base">Victim:</span>
+															<span class="text-[#737373] text-base">{caseCard.victims_name}</span>
+														</div>
 													{/if}
 													{#if caseCard.cause_of_death}
-													<div class="flex gap-2">
-														<span class="font-semibold text-base">Cause of death:</span>
-														<span class="text-[#737373] text-base">{caseCard.cause_of_death}</span>
-													</div>
+														<div class="flex gap-2">
+															<span class="font-semibold text-base">Cause of death:</span>
+															<span class="text-[#737373] text-base">{caseCard.cause_of_death}</span
+															>
+														</div>
 													{/if}
 													{#if caseCard.suspects_name}
 														<div class="flex gap-2">
@@ -248,28 +251,28 @@
 							<Card.Root
 								class="w-[300px] h-fit opacity-100 flex flex-col justify-center items-center gap-4 p-6 rounded-[10px] border border-solid border-gray-200 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300 hover:border-blue-300"
 							>
-							<Card.Header
-								class="w-full h-auto instrument-serif-regular text-[28px] tracking-[-0.02em] text-center"
-							>
-								<Card.Title>{person.name_eng}</Card.Title>
-							</Card.Header>
-							<Card.Content
-								class="bg-gray-300 w-[100px] h-[100px] aspect-square flex justify-center items-center rounded-[100%] px-0 py-0"
-							>
-								<Avatar.Root class="w-full h-full">
-									<Avatar.Image
-										src={person.character_image_url || 'https://github.com/shadcn.png'}
-										alt={person.name_eng}
-									/>
-									<Avatar.Fallback>{person.name_eng.slice(0, 2).toUpperCase()}</Avatar.Fallback>
-								</Avatar.Root>
-							</Card.Content>
-							<Card.Footer class="w-auto h-auto flex flex-wrap justify-center items-center gap-2">
-								{#each person.character_info || [] as info}
-									<Badge variant="outline">{info}</Badge>
-								{/each}
-							</Card.Footer>
-						</Card.Root>
+								<Card.Header
+									class="w-full h-auto instrument-serif-regular text-[28px] tracking-[-0.02em] text-center"
+								>
+									<Card.Title>{person.name_eng}</Card.Title>
+								</Card.Header>
+								<Card.Content
+									class="bg-gray-300 w-[100px] h-[100px] aspect-square flex justify-center items-center rounded-[100%] px-0 py-0"
+								>
+									<Avatar.Root class="w-full h-full">
+										<Avatar.Image
+											src={person.character_image_url || 'https://github.com/shadcn.png'}
+											alt={person.name_eng}
+										/>
+										<Avatar.Fallback>{person.name_eng.slice(0, 2).toUpperCase()}</Avatar.Fallback>
+									</Avatar.Root>
+								</Card.Content>
+								<Card.Footer class="w-auto h-auto flex flex-wrap justify-center items-center gap-2">
+									{#each person.character_info || [] as info}
+										<Badge variant="outline">{info}</Badge>
+									{/each}
+								</Card.Footer>
+							</Card.Root>
 						</a>
 					{/each}
 				</div>
