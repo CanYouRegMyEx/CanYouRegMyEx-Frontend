@@ -27,7 +27,8 @@
 		db: '🕵️‍♂️'
 	};
 
-	const BASE_CONAN_URL = 'https://www.detectiveconanworld.com';
+	const BASE_CONAN_URL =
+		import.meta.env.VITE_WIKI_BASE_URL || 'https://www.detectiveconanworld.com';
 
 	function formatPlots(plots) {
 		if (!plots || plots.length === 0) return [];
