@@ -289,7 +289,9 @@
 			<h1 class="instrument-serif-regular">CanYouRegMyEx</h1>
 		</div>
 		<div class="flex gap-10">
-			<p class="hover:text-[#325FEC]">Download CSV</p>
+			<p class="hover:text-[#325FEC]">
+				<a href="{BASE_URL}/export_file/get_csv" download="ConanEpisodes.csv"> Download CSV </a>
+			</p>
 			<p class="hover:text-[#325FEC]"><a href="https://github.com/CanYouRegMyEx">Source Code</a></p>
 			<p class="hover:text-[#325FEC]"><a href="#">Youtube</a></p>
 			<p class="hover:text-[#325FEC]">
