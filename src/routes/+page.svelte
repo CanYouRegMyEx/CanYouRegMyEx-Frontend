@@ -50,7 +50,7 @@
 			const response = await fetch(`${BASE_URL}/episodes/metadata/seasons`);
 			if (response.ok) {
 				const data = await response.json();
-				availableSeasons = data.sort((a, b) => a - b);
+				availableSeasons = data.sort((a, b) => a - b);  
 			} else {
 				throw new Error('Failed to fetch seasons');
 			}
@@ -125,9 +125,9 @@
 		const hasPlotFilter = selectedPlots.length > 0;
 
 		if (hasPlotFilter) {
-			await fetchEpisodesWithPlotSearch();
+			await fetchEpisodesWithPlotSearch();   // client-side filtering for plots
 		} else {
-			await fetchEpisodesNormal();
+			await fetchEpisodesNormal();    // server-side filtering
 		}
 	}
 
